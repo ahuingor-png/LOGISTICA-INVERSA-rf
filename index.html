@@ -171,7 +171,8 @@
         .resumen-tabla td { padding: 6px; border-bottom: 1px solid var(--border); }
         .resumen-vacio { text-align: center; font-size: 11px; color: var(--text-muted); padding: 8px 0; font-style: italic; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; align-items: center; justify-content: center; padding: 10px; backdrop-filter: blur(4px); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; align-items: center; justify-content: center; padding: 10px; }
+        .modal.modal-blur { backdrop-filter: blur(4px); }
         .modal-content { background: var(--card-bg); padding: 16px; border-radius: var(--radius-lg); width: 100%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
         
         .table-header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
@@ -392,7 +393,7 @@
 </div>
 
 <!-- MODAL AVANCE POR RUTA (solo categorías Repro) -->
-<div id="modalResumenRutasRepro" class="modal" style="z-index: 6900;">
+<div id="modalResumenRutasRepro" class="modal modal-blur" style="z-index: 6900;">
     <div class="modal-content" style="max-width:360px; height:80vh; display:flex; flex-direction:column;">
         <h3 style="font-weight:900; color:var(--primary); margin-bottom:10px;">📊 Avance por ruta</h3>
         <div id="reproResumenRutas" style="overflow-y:auto; flex:1; margin-bottom:14px;"></div>
@@ -401,7 +402,7 @@
 </div>
 
 <!-- MODAL FALTANTES POR RUTA -->
-<div id="modalFaltantesRepro" class="modal" style="z-index: 6900;">
+<div id="modalFaltantesRepro" class="modal modal-blur" style="z-index: 6900;">
     <div class="modal-content" style="max-width:380px; height:85vh; display:flex; flex-direction:column;">
         <h3 style="font-weight:900; color:var(--danger); margin-bottom:10px;">🔎 Faltantes por ruta</h3>
         <div id="faltantesListaRepro" style="overflow-y:auto; flex:1; margin-bottom:14px;"></div>
@@ -409,11 +410,32 @@
     </div>
 </div>
 
-<!-- MODAL DETALLE / EDITAR / ELIMINAR ESCANEO REPRO -->
-<div id="modalDetalleRepro" class="modal" style="z-index: 7100;">
-    <div class="modal-content" style="max-width:320px;">
-        <h3 style="font-weight:900; color:var(--primary); margin-bottom:6px; text-align:center;" id="detReproCodigo"></h3>
-        <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-bottom:14px;" id="detReproMsg"></p>
+<!-- MODAL DETALLE / EDITAR / ELIMINAR ESCANEO REPRO
+     (mismo estilo visual que el modal de duplicados de Escaneo General / Ruteo
+     Dinámico IL — modalDup: ícono + título, caja de Día/Sec/Ruta — y además
+     se agrega el Seguimiento bien visible, cosa que el modal original de
+     Escaneo General no muestra.) -->
+<div id="modalDetalleRepro" class="modal modal-blur" style="z-index: 7100;">
+    <div class="modal-content" style="max-width: 360px;">
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 24px;">⚠️</span>
+            <div>
+                <h4 style="color:var(--danger); font-weight:900;">YA ESCANEADO EN REPROGRAMACIONES</h4>
+                <p id="detReproMsg" style="font-size: 11px; color: var(--text-muted);"></p>
+            </div>
+        </div>
+
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; margin-bottom: 10px; text-align:center;">
+            <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📦 Seguimiento</div>
+            <div id="detReproCodigo" style="font-size:16px; font-weight:900; color:var(--text-main);"></div>
+        </div>
+
+        <div class="info-preview-box">
+            <div><b>Día:</b><br><span id="detReproDia">-</span></div>
+            <div><b>Sec:</b><br><span id="detReproSec">-</span></div>
+            <div><b>Ruta:</b><br><span id="detReproRuta">-</span></div>
+        </div>
+
         <div class="repro-row">
             <select id="detReproZona">
                 <option value="POST VENTA">POST VENTA</option>
@@ -430,7 +452,7 @@
 </div>
 
 <!-- MODAL LIMPIAR HISTORIAL REPRO -->
-<div id="modalLimpiarRepro" class="modal" style="z-index: 6950;">
+<div id="modalLimpiarRepro" class="modal modal-blur" style="z-index: 6950;">
     <div class="modal-content" style="max-width:320px; text-align:center;">
         <h3 style="font-weight:900; color:var(--danger); margin-bottom:10px;">🧹 Limpiar historial Repros</h3>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Esto borra TODOS los escaneos de Reprogramaciones (no afecta el historial de Picking).</p>
@@ -441,7 +463,7 @@
 </div>
 
 <!-- MODAL LISTA DE ÚLTIMOS ESCANEOS REPRO -->
-<div id="modalListaRepro" class="modal" style="z-index: 6900;">
+<div id="modalListaRepro" class="modal modal-blur" style="z-index: 6900;">
     <div class="modal-content" style="max-width:360px; height:80vh; display:flex; flex-direction:column;">
         <h3 style="font-weight:900; color:var(--primary); margin-bottom:10px;">📋 Últimos escaneos</h3>
         <div id="reproLista" style="overflow-y:auto; flex:1; margin-bottom:14px;"></div>
@@ -450,7 +472,7 @@
 </div>
 
 <!-- MODAL DOFFA (NUEVO) -->
-<div id="modalDoffa" class="modal" style="z-index: 6500;">
+<div id="modalDoffa" class="modal modal-blur" style="z-index: 6500;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid #8b5cf6;">
         <div style="font-size: 30px; margin-bottom: 10px;">📦</div>
         <h4 style="color:#8b5cf6; font-weight:900; margin-bottom: 5px;">ALERTA DROP OFF</h4>
@@ -463,7 +485,7 @@
 </div>
 
 <!-- MODAL CUSTODIA SELLER (NUEVO) -->
-<div id="modalCustodiaSeller" class="modal" style="z-index: 6500;">
+<div id="modalCustodiaSeller" class="modal modal-blur" style="z-index: 6500;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid #0e7490;">
         <div style="font-size: 30px; margin-bottom: 10px;">🔒</div>
         <h4 style="color:#0e7490; font-weight:900; margin-bottom: 5px;">CUSTODIA SELLER</h4>
@@ -476,7 +498,7 @@
 </div>
 
 <!-- MODAL POR DEVOLVER BU (NUEVO) -->
-<div id="modalPorDevolverBu" class="modal" style="z-index: 6500;">
+<div id="modalPorDevolverBu" class="modal modal-blur" style="z-index: 6500;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid #16a34a;">
         <div style="font-size: 30px; margin-bottom: 10px;">🔁</div>
         <h4 style="color:#16a34a; font-weight:900; margin-bottom: 5px;">POR DEVOLVER BU</h4>
@@ -488,7 +510,7 @@
     </div>
 </div>
 
-<div id="modalMensajeOperario" class="modal" style="z-index: 5000; background: rgba(15, 23, 42, 0.9);">
+<div id="modalMensajeOperario" class="modal modal-blur" style="z-index: 5000; background: rgba(15, 23, 42, 0.9);">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--warning);">
         <div style="font-size: 30px; margin-bottom: 4px;">📢</div>
         <h3 style="font-weight: 900; color: var(--warning); margin-bottom: 2px; text-transform: uppercase;">MENSAJE DE CONTROL</h3>
@@ -507,7 +529,7 @@
     </div>
 </div>
 
-<div id="modalGatekeeper" class="modal" style="display: flex;">
+<div id="modalGatekeeper" class="modal modal-blur" style="display: flex;">
     <div class="modal-content" style="max-width: 360px; text-align: center; padding: 20px;">
         <div class="login-logo-wrap">
             <img src="data:image/webp;base64,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" alt="REVERSA" class="login-logo">
@@ -521,7 +543,7 @@
     </div>
 </div>
 
-<div id="modalBienvenida" class="modal" style="z-index: 7000;">
+<div id="modalBienvenida" class="modal modal-blur" style="z-index: 7000;">
     <div class="modal-content" style="max-width: 360px; text-align: center; padding: 20px;">
         <div class="login-logo-wrap"><img id="imgLogoBienvenida" alt="REVERSA" class="login-logo"></div>
         <h3 id="txtBienvenidaSaludo" style="font-weight: 900; color: var(--primary); margin-bottom: 4px;">¡Bienvenido!</h3>
@@ -530,7 +552,7 @@
 </div>
 
 <!-- MODAL ELEGIR MODO OPERATIVO -->
-<div id="modalElegirModo" class="modal" style="z-index: 6800;">
+<div id="modalElegirModo" class="modal modal-blur" style="z-index: 6800;">
     <div class="modal-content">
         <h3 style="font-weight:900; color:var(--primary); margin-bottom:14px;">¿QUÉ VAS A HACER?</h3>
         <button class="modo-btn picking" onclick="elegirModoOperativo('picking')">📦 RUTEO DINÁMICO IL</button>
@@ -569,6 +591,34 @@
         <button class="side-menu-close" onclick="cerrarMenuLateral()">&times;</button>
     </div>
     <div class="side-menu-body">
+        <div class="side-menu-section-title">🎛️ Modos</div>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:4px;">
+            <label style="padding:8px 10px; background:rgba(239,68,68,0.05); border:1px dashed #ef4444; border-radius:6px; font-size:12px; font-weight:800; color:#dc2626; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkModoForzar" onchange="toggleModoForzar()" style="width:16px; height:16px;">
+                <span>🔓 FORZAR</span>
+            </label>
+
+            <label style="padding:8px 10px; background:rgba(33,150,243,0.05); border:1px dashed var(--route-color); border-radius:6px; font-size:12px; font-weight:800; color:var(--route-color); display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkModoValidarRuta" onchange="toggleModoValidarRuta()" style="width:16px; height:16px;">
+                <span>🚚 RUTA</span>
+            </label>
+
+            <label style="padding:8px 10px; background:rgba(236,72,153,0.05); border:1px dashed var(--print-color); border-radius:6px; font-size:12px; font-weight:800; color:var(--print-color); display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkModoImprimir" onchange="toggleModoImprimirLocal()" style="width:16px; height:16px;">
+                <span>🖨️ IMP.</span>
+            </label>
+
+            <label style="padding:8px 10px; background:rgba(16,185,129,0.05); border:1px dashed #10b981; border-radius:6px; font-size:12px; font-weight:800; color:#10b981; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkControlSeguridad" onchange="toggleControlSeguridad()" style="width:16px; height:16px;">
+                <span>🛡️ VALIDAR</span>
+            </label>
+
+            <label style="padding:8px 10px; background:rgba(249,115,22,0.05); border:1px dashed #f97316; border-radius:6px; font-size:12px; font-weight:800; color:#f97316; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkEscaneoAgil" onchange="toggleEscaneoAgil()" style="width:16px; height:16px;">
+                <span>🏃 ÁGIL</span>
+            </label>
+        </div>
+
         <div class="side-menu-section-title">📋 Consulta</div>
         <button class="btn-header btn-search-admin" id="btnConsultarAdmin" onclick="cerrarMenuLateral(); abrirModalConsulta();">🔍 Consultar Registros</button>
 
@@ -636,42 +686,6 @@
             </div>
         </div>
         
-        <div style="margin-top:10px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
-            <div style="padding:6px; background:rgba(239,68,68,0.05); border:1px dashed #ef4444; border-radius:6px; flex: 1; min-width: 80px; display: flex; align-items: center; justify-content: center;">
-                <label style="font-size:10px; font-weight:800; color:#dc2626; display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="chkModoForzar" onchange="toggleModoForzar()" style="width:14px; height:14px;">
-                    <span>🔓 FORZAR</span>
-                </label>
-            </div>
-            
-            <div style="padding:6px; background:rgba(33,150,243,0.05); border:1px dashed var(--route-color); border-radius:6px; flex: 1; min-width: 80px; display: flex; align-items: center; justify-content: center;">
-                <label style="font-size:10px; font-weight:800; color:var(--route-color); display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="chkModoValidarRuta" onchange="toggleModoValidarRuta()" style="width:14px; height:14px;">
-                    <span>🚚 RUTA</span>
-                </label>
-            </div>
-
-            <div style="padding:6px; background:rgba(236,72,153,0.05); border:1px dashed var(--print-color); border-radius:6px; flex: 1; min-width: 80px; display: flex; align-items: center; justify-content: center;">
-                <label style="font-size:10px; font-weight:800; color:var(--print-color); display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="chkModoImprimir" onchange="toggleModoImprimirLocal()" style="width:14px; height:14px;">
-                    <span>🖨️ IMP.</span>
-                </label>
-            </div>
-
-            <div style="padding:6px; background:rgba(16,185,129,0.05); border:1px dashed #10b981; border-radius:6px; flex: 1; min-width: 80px; display: flex; align-items: center; justify-content: center;">
-                <label style="font-size:10px; font-weight:800; color:#10b981; display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="chkControlSeguridad" onchange="toggleControlSeguridad()" style="width:14px; height:14px;">
-                    <span>🛡️ VALIDAR</span>
-                </label>
-            </div>
-
-            <div style="padding:6px; background:rgba(249,115,22,0.05); border:1px dashed #f97316; border-radius:6px; flex: 1; min-width: 80px; display: flex; align-items: center; justify-content: center;">
-                <label style="font-size:10px; font-weight:800; color:#f97316; display:flex; align-items:center; gap:4px; cursor:pointer;">
-                    <input type="checkbox" id="chkEscaneoAgil" onchange="toggleEscaneoAgil()" style="width:14px; height:14px;">
-                    <span>🏃 ÁGIL</span>
-                </label>
-            </div>
-        </div>
     </div>
 
     <!-- PANEL MODO CONTROL DE SEGURIDAD (VALIDACIÓN DE RUTA) -->
@@ -699,7 +713,7 @@
         </div>
     </div>
 
-    <div id="modalConfigImpresora" class="modal">
+    <div id="modalConfigImpresora" class="modal modal-blur">
         <div class="modal-content" style="max-width:360px;">
             <div class="table-header">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -735,7 +749,7 @@
     </div>
 </div>
 
-<div id="modalConsultaAdmin" class="modal">
+<div id="modalConsultaAdmin" class="modal modal-blur">
     <div class="modal-content">
         <div class="table-header">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -764,7 +778,7 @@
     </div>
 </div>
 
-<div id="modalSeleccionRuta" class="modal" style="z-index: 9200;">
+<div id="modalSeleccionRuta" class="modal modal-blur" style="z-index: 9200;">
     <div class="modal-content" style="max-width: 420px;">
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
             <span style="font-size: 24px;">🔀</span>
@@ -780,7 +794,7 @@
     </div>
 </div>
 
-<div id="modalDup" class="modal">
+<div id="modalDup" class="modal modal-blur">
     <div class="modal-content" style="max-width: 360px;">
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
             <span style="font-size: 24px;">⚠️</span>
@@ -788,6 +802,11 @@
                 <h4 style="color:var(--danger); font-weight:900;">GUÍA YA REGISTRADA</h4>
                 <p id="modalMsg" style="font-size: 11px; color: var(--text-muted);"></p>
             </div>
+        </div>
+
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; margin-bottom: 10px; text-align:center;">
+            <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📦 Seguimiento</div>
+            <div id="lblDupCodigo" style="font-size:16px; font-weight:900; color:var(--text-main);"></div>
         </div>
 
         <div class="info-preview-box">
@@ -836,7 +855,7 @@
     </div>
 </div>
 
-<div id="modalAdminUsuarios" class="modal">
+<div id="modalAdminUsuarios" class="modal modal-blur">
     <div class="modal-content" style="max-width: 380px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <h4 style="font-weight:900;">⚙️ CONTROL PANEL</h4>
@@ -922,7 +941,7 @@
     </div>
 </div>
 
-<div id="modalReimprimir" class="modal" style="z-index: 6000;">
+<div id="modalReimprimir" class="modal modal-blur" style="z-index: 6000;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--print-color);">
         <div style="font-size: 30px; margin-bottom: 10px;">🖨️</div>
         <h4 style="color:var(--print-color); font-weight:900; margin-bottom: 5px;">¿REIMPRIMIR ETIQUETA?</h4>
@@ -934,7 +953,7 @@
     </div>
 </div>
 
-<div id="modalSinProg" class="modal" style="z-index: 6000;">
+<div id="modalSinProg" class="modal modal-blur" style="z-index: 6000;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--warning);">
         <div style="font-size: 30px; margin-bottom: 10px;">⚠️</div>
         <h4 style="color:var(--warning); font-weight:900; margin-bottom: 5px;">SIN PROGRAMACIÓN</h4>
@@ -943,7 +962,7 @@
     </div>
 </div>
 
-<div id="modalCierreZonaCS" class="modal" style="z-index: 6600;">
+<div id="modalCierreZonaCS" class="modal modal-blur" style="z-index: 6600;">
     <div class="modal-content" style="max-width: 420px;">
         <div class="desktop-panel-title" style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--danger); padding-bottom:8px; margin-bottom:10px;">
             <span style="color:var(--danger);">🔓 CIERRE FORZADO DE ZONA</span>
@@ -954,7 +973,7 @@
     </div>
 </div>
 
-<div id="modalAgregarSeguimientoCS" class="modal" style="z-index: 6100;">
+<div id="modalAgregarSeguimientoCS" class="modal modal-blur" style="z-index: 6100;">
     <div class="modal-content" style="max-width: 380px; text-align: center; border: 3px solid #0ea5e9;">
         <div style="font-size: 30px; margin-bottom: 8px;">➕</div>
         <h4 style="color:#0ea5e9; font-weight:900; margin-bottom: 6px;">AGREGAR A ESTA RUTA</h4>
@@ -974,7 +993,7 @@
     </div>
 </div>
 
-<div id="modalEscaneoAgilUbicacion" class="modal" style="z-index: 6300;">
+<div id="modalEscaneoAgilUbicacion" class="modal modal-blur" style="z-index: 6300;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid #f97316;">
         <div style="font-size: 30px; margin-bottom: 8px;">📍</div>
         <h4 style="color:#f97316; font-weight:900; margin-bottom: 6px;">ESCANEA LA UBICACIÓN</h4>
@@ -989,7 +1008,7 @@
     </div>
 </div>
 
-<div id="modalAlertaRuta" class="modal" style="z-index: 6000;">
+<div id="modalAlertaRuta" class="modal modal-blur" style="z-index: 6000;">
     <div id="alertaRutaContent" class="modal-content" style="max-width: 360px; text-align: center;">
         <h4 id="alertaRutaTitulo" style="font-weight:900; margin-bottom: 10px; text-transform: uppercase;"></h4>
         <div id="alertaRutaMensaje" style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;"></div>
@@ -1476,19 +1495,19 @@
             procesandoExclusividad = false;
         }
 
-        const header = document.querySelector('.header');
+        const dbStatus = document.querySelector('.db-status');
         const dashboard = document.querySelector('.dashboard-compact');
         const panel = document.getElementById('panelControlSeguridad');
         const inp = document.getElementById('inpScan');
 
         if (modoControlSeguridadActivo) {
-            if(header) header.style.display = "none";
+            if(dbStatus) dbStatus.style.display = "none";
             if(dashboard) dashboard.style.display = "none";
             panel.style.display = "block";
             inp.placeholder = "🛡️ ESCANEAR PARA VALIDAR...";
             actualizarPanelControlSeguridad();
         } else {
-            if(header) header.style.display = "";
+            if(dbStatus) dbStatus.style.display = "";
             if(dashboard) dashboard.style.display = "";
             panel.style.display = "none";
             inp.placeholder = "ESCANEÉ AQUÍ...";
@@ -3498,6 +3517,7 @@
     function abrirModalDup(item, infoContexto) {
         duplicadoKey = item.key;
         document.getElementById('modalMsg').textContent = `Escaneado por '${item.usuario || 'Desconocido'}'.`;
+        document.getElementById('lblDupCodigo').textContent = item.guia || infoContexto.guia || "-";
         document.getElementById('lblDupDia').textContent = item.dia || infoContexto.dia || "SIN PROG.";
         document.getElementById('lblDupSec').textContent = item.sec || infoContexto.sec || "S/S";
         document.getElementById('lblDupRuta').textContent = item.ruta || infoContexto.ruta || "SIN PROG.";
@@ -4217,6 +4237,11 @@
         const ruta = buscarColumna(coincidencia, ["RUTA"]) || '—';
         const cfg = obtenerConfigEstadoRepro(ruta);
 
+        // Si ya había un modal repro abierto de un escaneo anterior, se oculta
+        // primero para forzar un repintado limpio (evita que el navegador
+        // "arrastre" el frame anterior cuando llegan escaneos muy seguidos).
+        ocultarModalesRapidosRepro();
+
         const icono = document.getElementById('resReproIcono');
         icono.style.background = cfg.color;
         icono.textContent = cfg.icon;
@@ -4231,7 +4256,15 @@
         document.getElementById('modalResultadoRepro').style.display = 'flex';
         playBeep(600);
         clearTimeout(timerAutoCerrarModalRepro);
-        timerAutoCerrarModalRepro = setTimeout(() => cerrarModalResultadoRepro(), 2500);
+        timerAutoCerrarModalRepro = setTimeout(() => cerrarModalResultadoRepro(), 1100);
+    }
+
+    // Oculta al instante cualquier modal rápido de repro que siga visible
+    // (resultado o inventariado), sin esperar su propio timer de autocierre.
+    function ocultarModalesRapidosRepro() {
+        clearTimeout(timerAutoCerrarModalRepro);
+        document.getElementById('modalResultadoRepro').style.display = 'none';
+        document.getElementById('modalInventariadoRepro').style.display = 'none';
     }
 
     function cerrarModalResultadoRepro() {
@@ -4241,11 +4274,12 @@
     }
 
     function mostrarModalInventariadoRepro(cod) {
+        ocultarModalesRapidosRepro();
         document.getElementById('invReproCodigo').textContent = cod;
         document.getElementById('modalInventariadoRepro').style.display = 'flex';
         playBeep(300);
         clearTimeout(timerAutoCerrarModalRepro);
-        timerAutoCerrarModalRepro = setTimeout(() => cerrarModalInventariadoRepro(), 2500);
+        timerAutoCerrarModalRepro = setTimeout(() => cerrarModalInventariadoRepro(), 1100);
     }
 
     function cerrarModalInventariadoRepro() {
@@ -4309,7 +4343,10 @@
         if (!item) return;
         reproDetalleKey = key;
         document.getElementById('detReproCodigo').textContent = item.codigo;
-        document.getElementById('detReproMsg').textContent = `Ruta: ${item.ruta || '—'} · Escaneado por '${item.usuario || 'Desconocido'}' · ${item.hora || ''} · ${item.resultado || ''}`;
+        document.getElementById('detReproMsg').textContent = `Escaneado por '${item.usuario || 'Desconocido'}' · ${item.hora || ''} · ${item.resultado || item.categoria || ''}`;
+        document.getElementById('detReproDia').textContent = item.dia || '-';
+        document.getElementById('detReproSec').textContent = item.sec || '-';
+        document.getElementById('detReproRuta').textContent = item.ruta || '-';
         document.getElementById('detReproZona').value = item.zona || '';
         document.getElementById('detReproUbi').value = item.ubi || '';
 
