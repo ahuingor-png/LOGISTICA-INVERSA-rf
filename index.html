@@ -1067,6 +1067,7 @@
 
     let db = []; 
     let scans = [];
+    let zonasCerradasILCache = {}; // Cache local de zonas (Ruta+PL) que ya tienen Control de Seguridad realizado
     let usuariosPermitidos = {};
     let reglasDinamicas = {};
     let usuarioActivo = "";
@@ -1549,6 +1550,7 @@
         const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim();
         const zonaActiva = document.getElementById('inpZona').value.toUpperCase().trim() || 'SIN ZONA';
         const listaCont = document.getElementById('listaFoliosZonaCS');
+        const inpScan = document.getElementById('inpScan');
 
         if (!rutaActiva) {
             document.getElementById('csRutaTotal').textContent = "0";
@@ -1558,8 +1560,31 @@
             document.getElementById('csZonaAprobados').textContent = "0";
             document.getElementById('csZonaFaltan').textContent = "0";
             listaCont.innerHTML = '<div class="resumen-vacio">Indica Ruta (Ubicación) y Zona (PL) para ver los folios pendientes.</div>';
+            if (inpScan) inpScan.disabled = false;
             return;
         }
+
+        // Si esta Ruta+Zona ya tiene el Control de Seguridad realizado (cerrada),
+        // se bloquea el escaneo y se muestra quién y a qué hora lo hizo, sin
+        // importar el turno/jornada en que se haya cerrado.
+        const zonaYaControlada = obtenerZonaCerradaInfo(rutaActiva, zonaActiva);
+        if (zonaYaControlada) {
+            document.getElementById('csRutaTotal').textContent = "-";
+            document.getElementById('csRutaAprobados').textContent = "-";
+            document.getElementById('csRutaFaltan').textContent = "-";
+            document.getElementById('csZonaTotal').textContent = "-";
+            document.getElementById('csZonaAprobados').textContent = "-";
+            document.getElementById('csZonaFaltan').textContent = "-";
+            listaCont.innerHTML = `
+                <div class="resumen-vacio" style="color:#10b981; font-weight:800; text-align:center; padding:14px; border:1px dashed #10b981; border-radius:8px; background:rgba(16,185,129,0.08);">
+                    🔒 ESTA ZONA YA CUENTA CON<br>CONTROL DE SEGURIDAD REALIZADO
+                    <div style="margin-top:8px; font-size:11px; font-weight:700;">👤 Usuario: ${zonaYaControlada.cerradaPor || 'N/D'}</div>
+                    <div style="font-size:11px; font-weight:700;">🕒 Hora: ${zonaYaControlada.hora || 'N/D'}</div>
+                </div>`;
+            if (inpScan) inpScan.disabled = true;
+            return;
+        }
+        if (inpScan) inpScan.disabled = false;
 
         const registrosRuta = scans.filter(s => s.ubic === rutaActiva && CATS_TOTAL_CS.includes(s.cat));
         const aprobadosRuta = registrosRuta.filter(s => CATS_APROBADAS_CS.includes(s.cat));
@@ -1610,6 +1635,13 @@
 
         if (!rutaActiva) {
             alert('Debe indicar la Ruta en la casilla "Ubicación"');
+            inp.value = ''; inp.focus();
+            return;
+        }
+
+        const zonaYaControlada = obtenerZonaCerradaInfo(rutaActiva, zonaActiva);
+        if (zonaYaControlada) {
+            mostrarModalRutaAlert('warning', '🔒 CONTROL DE SEGURIDAD YA REALIZADO', mensajeZonaYaControlada(zonaYaControlada), 0);
             inp.value = ''; inp.focus();
             return;
         }
@@ -1796,12 +1828,29 @@
         return (ruta + "__" + zona).replace(/[.#$\[\]@\s]/g, '_');
     }
 
+    // Devuelve la info de cierre (usuario y hora) si esa Ruta+Zona ya tiene el
+    // Control de Seguridad realizado, sin importar el turno/jornada. Si no está
+    // cerrada, devuelve null.
+    function obtenerZonaCerradaInfo(ruta, zona) {
+        return zonasCerradasILCache[claveZonaCerrada(ruta, zona)] || null;
+    }
+
+    function mensajeZonaYaControlada(info) {
+        return `La ruta <b>${info.ruta}</b>, zona <b>${info.zona}</b> ya cuenta con el <b>Control de Seguridad realizado</b>.<br><br>👤 Usuario: <b>${info.cerradaPor || 'N/D'}</b><br>🕒 Hora: <b>${info.hora || 'N/D'}</b>`;
+    }
+
     function cerrarZonaControlSeguridad() {
         const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim();
         const zonaActiva = document.getElementById('inpZona').value.toUpperCase().trim() || 'SIN ZONA';
 
         if (!rutaActiva) {
             alert('Debe indicar la Ruta en la casilla "Ubicación"');
+            return;
+        }
+
+        const zonaYaControlada = obtenerZonaCerradaInfo(rutaActiva, zonaActiva);
+        if (zonaYaControlada) {
+            mostrarModalRutaAlert('warning', '🔒 CONTROL DE SEGURIDAD YA REALIZADO', mensajeZonaYaControlada(zonaYaControlada), 0);
             return;
         }
 
@@ -2086,6 +2135,13 @@
             if(modoControlSeguridadActivo) {
                 actualizarPanelControlSeguridad();
             }
+        });
+
+        // Escucha en tiempo real las zonas (Ruta + PL) que ya fueron cerradas
+        // con Control de Seguridad, sin importar el turno/jornada en que se hizo.
+        rtdb.ref("zonasCerradasIL").on("value", (snapshot) => {
+            zonasCerradasILCache = snapshot.val() || {};
+            if (modoControlSeguridadActivo) actualizarPanelControlSeguridad();
         });
 
         rtdb.ref("usuarios_sistema").on("value", (snapshot) => {
