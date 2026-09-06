@@ -551,6 +551,22 @@
     </div>
 </div>
 
+<!-- Se muestra en el login si el mismo usuario ya figura conectado ("online")
+     desde otro dispositivo/navegador (nodo de presencia en Firebase). -->
+<div id="modalSesionActivaOtroLugar" class="modal modal-blur" style="z-index: 7200;">
+    <div class="modal-content" style="text-align:center; padding: 28px 24px; max-width:380px;">
+        <div style="font-size:34px; margin-bottom:6px;">⚠️</div>
+        <h3 style="font-weight:900; color:var(--text-main); margin-bottom:6px;">Sesión ya abierta en otro lugar</h3>
+        <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-bottom:20px; line-height:1.5;">
+            Este usuario ya tiene la sesión iniciada en otro dispositivo o navegador. ¿Qué deseas hacer?
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <button onclick="elegirCerrarOtraSesion()" style="width:100%; background: linear-gradient(135deg, var(--danger), #991b1b); color:white; border:none; padding:12px; border-radius:var(--radius-md); font-weight:800; cursor:pointer; font-size:13px;">🔒 Cerrar esa sesión y continuar aquí</button>
+            <button onclick="elegirMantenerAmbasSesiones()" style="width:100%; background: var(--input-bg); color:var(--text-main); border:2px solid var(--border); padding:12px; border-radius:var(--radius-md); font-weight:800; cursor:pointer; font-size:13px;">🟢 Mantener ambas sesiones abiertas</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL ELEGIR MODO OPERATIVO -->
 <div id="modalElegirModo" class="modal modal-blur" style="z-index: 6800;">
     <div class="modal-content">
@@ -617,6 +633,10 @@
                 <input type="checkbox" id="chkEscaneoAgil" onchange="toggleEscaneoAgil()" style="width:16px; height:16px;">
                 <span>🏃 ÁGIL</span>
             </label>
+            <label style="padding:8px 10px; background:rgba(139,92,246,0.05); border:1px dashed #8b5cf6; border-radius:6px; font-size:12px; font-weight:800; color:#8b5cf6; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkModoCDVES" onchange="toggleModoCDVES()" style="width:16px; height:16px;">
+                <span>🏭 CD VES</span>
+            </label>
         </div>
 
         <div class="side-menu-section-title">📋 Consulta</div>
@@ -636,10 +656,12 @@
 <div class="main-content">
     
     <div class="dashboard-compact">
-        <div class="stat-card-mini"><div class="stat-label-mini">Día</div><div id="dispDia" class="stat-value-mini">-</div></div>
-        <div class="stat-card-mini"><div class="stat-label-mini">Secuencia</div><div id="dispSec" class="stat-value-mini">-</div></div>
-        <div class="stat-card-mini" style="grid-column: span 2;"><div class="stat-label-mini">Ruta Asignada</div><div id="dispRuta" class="stat-value-mini" style="font-size:14px;">-</div></div>
-        
+        <div class="stat-card-mini oculta-en-cdves"><div class="stat-label-mini">Día</div><div id="dispDia" class="stat-value-mini">-</div></div>
+        <div class="stat-card-mini oculta-en-cdves"><div class="stat-label-mini">Secuencia</div><div id="dispSec" class="stat-value-mini">-</div></div>
+        <div class="stat-card-mini oculta-en-cdves" style="grid-column: span 2;"><div class="stat-label-mini">Ruta Asignada</div><div id="dispRuta" class="stat-value-mini" style="font-size:14px;">-</div></div>
+
+        <div class="stat-card-mini mod-cdves-item" id="bloqueRollCDVES" style="display:none; grid-column: span 2; background:rgba(139,92,246,0.07); border:1px solid #8b5cf6;"><div class="stat-label-mini" style="color:#8b5cf6;">📍 ZONA DE ENCAJE DEL ROLL</div><div id="dispRollCDVES" class="stat-value-mini" style="color:#8b5cf6;">-</div></div>
+
         <div class="stat-card-mini route-accent mod-ruta-item" style="display: none;"><div class="stat-label-mini">En Ruta (Base)</div><div id="cantSubida" class="stat-value-mini">0</div></div>
         <div class="stat-card-mini route-accent mod-ruta-item" style="display: none;"><div class="stat-label-mini">Faltantes</div><div id="cantFaltante" class="stat-value-mini" style="color:var(--danger)">0</div></div>
         
@@ -840,6 +862,8 @@
                     <option value="EXTRAIDO">EXTRAIDO</option>
                     <option value="RUTEO IL">RUTEO IL</option>
                     <option value="RUTEO IL (MULTIFOLIOS)">RUTEO IL (MULTIFOLIOS)</option>
+                    <option value="CD VES IL">CD VES IL</option>
+                    <option value="CD VES IL (MULTIFOLIOS)">CD VES IL (MULTIFOLIOS)</option>
                     <option value="OTRO">OTRO...</option>
                 </select>
             </div>
@@ -1082,6 +1106,16 @@
     let modoValidarRutaActivo = false;
     let modoImpresionActivo = false; 
     let modoControlSeguridadActivo = false;
+    // Modo "Escaneos CD VES": reutiliza por completo el motor de Modo Ruta,
+    // fijando automáticamente Ubicación = RUTA_FIJA_CDVES ("1001") y
+    // agregando a cada registro guardado la Zona de encaje del ROLL activa
+    // (se pide al activar el modo, y se puede actualizar cuando el sistema
+    // detecta un cambio de PL) más el sufijo "-CDVES" en la Zona (PL) al
+    // momento de guardarse.
+    let modoCDVESActivo = false;
+    let rollActivoCDVES = "";
+    let ultimoPLDetectadoCDVES = null; // último PL escaneado en CD VES, para detectar cambios de PL
+    const RUTA_FIJA_CDVES = "1001";
     let contadorEtiquetasOperarioSesion = 0; 
 
     // ESCANEO ÁGIL: modo de 2 pasos para el escaneo general. Se deja fija la
@@ -1117,7 +1151,7 @@
     const DICCIONARIO_DIAS = { 'L': 'LUNES', 'M': 'MARTES', 'X': 'MIÉRCOLES', 'J': 'JUEVES', 'V': 'VIERNES', 'S': 'SÁBADO', 'D': 'DOMINGO' };
     let baseDatosRutaNube = []; 
 
-    const opcionesEstandar = ["-", "BIG TICKET", "MINI", "INVENTARIADO", "MULTIFOLIO", "REZAGOS", "EXTRAIDO", "RUTEO IL", "RUTEO IL (MULTIFOLIOS)", "OTRO"];
+    const opcionesEstandar = ["-", "BIG TICKET", "MINI", "INVENTARIADO", "MULTIFOLIO", "REZAGOS", "EXTRAIDO", "RUTEO IL", "RUTEO IL (MULTIFOLIOS)", "CD VES IL", "CD VES IL (MULTIFOLIOS)", "OTRO"];
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1223,13 +1257,17 @@
     }
 
     function verificarSesionActiva() {
-        const localUser = localStorage.getItem('inv_session_user');
+        // Se usa sessionStorage (no localStorage): la sesión NO sobrevive a
+        // cerrar la pestaña/navegador ni a apagar el equipo, así que siempre
+        // se debe volver a pedir usuario y contraseña en un inicio nuevo.
+        const localUser = sessionStorage.getItem('inv_session_user');
         if (!localUser) {
             document.getElementById('gateUsername').value = "";
             document.getElementById('gatePassword').value = "";
             document.getElementById('modalGatekeeper').style.display = "flex";
             document.body.classList.remove('is-admin');
             desvincularEscuchaMensajes();
+            detenerPresencia();
         } else {
             usuarioActivo = localUser;
             document.getElementById('displayUser').textContent = usuarioActivo;
@@ -1246,6 +1284,7 @@
             actualizarListaTarjetas();
             document.getElementById('inpScan').focus();
             vincularEscuchaMensajes();
+            iniciarPresencia();
 
             if (typeof modoYaElegidoSesion !== 'undefined' && !modoYaElegidoSesion) {
                 setTimeout(() => abrirSelectorModo(), 2900);
@@ -1253,31 +1292,76 @@
         }
     }
 
+    let loginPendienteNombre = null;
+
     function intentarIngresarSistema() {
         let userVal = document.getElementById('gateUsername').value.trim();
         let passVal = document.getElementById('gatePassword').value.trim();
         if (!userVal) return alert("Ingresa un usuario.");
         if (!passVal) return alert("Ingresa la contraseña.");
 
+        let nombreValidado = null;
+
         if (userVal.toLowerCase() === "ahuingor") {
-            if (passVal === "@lepus2211") {
-                usuarioActivo = "ahuingor";
-                localStorage.setItem('inv_session_user', usuarioActivo);
-                verificarSesionActiva();
-                mostrarBienvenida();
-            } else {
-                alert("Contraseña incorrecta.");
-            }
+            if (passVal !== "@lepus2211") return alert("Contraseña incorrecta.");
+            nombreValidado = "ahuingor";
         } else {
             let userValNormalizado = userVal.replace(/^@/, '').toLowerCase();
             const datosUsuario = Object.values(usuariosPermitidos).find(u => u.nombre.toLowerCase().replace(/^@/, '') === userValNormalizado);
             if (!datosUsuario) return alert("Operario no autorizado.");
             if (String(datosUsuario.dni || "") !== passVal) return alert("Contraseña incorrecta.");
-            usuarioActivo = datosUsuario.nombre;
-            localStorage.setItem('inv_session_user', usuarioActivo);
-            verificarSesionActiva();
-            mostrarBienvenida();
+            nombreValidado = datosUsuario.nombre;
         }
+
+        verificarSesionActivaEnOtroLugar(nombreValidado);
+    }
+
+    // Antes de completar el ingreso, revisa si este mismo usuario ya figura
+    // conectado ("online") desde otro dispositivo/navegador, usando el nodo
+    // de presencia en Firebase. Si es así, deja elegir entre cerrar esa
+    // sesión y continuar aquí, o mantener ambas sesiones abiertas.
+    function verificarSesionActivaEnOtroLugar(nombre) {
+        const clave = claveUsuarioPresencia(nombre);
+        rtdb.ref("presencia/" + clave).once("value").then(snap => {
+            const val = snap.val();
+            if (val && val.online === true) {
+                loginPendienteNombre = nombre;
+                document.getElementById('modalSesionActivaOtroLugar').style.display = 'flex';
+            } else {
+                finalizarLogin(nombre);
+            }
+        }).catch(() => {
+            // Si falla la consulta de presencia (sin conexión, etc.), no bloqueamos el ingreso.
+            finalizarLogin(nombre);
+        });
+    }
+
+    function elegirCerrarOtraSesion() {
+        if (!loginPendienteNombre) return;
+        const clave = claveUsuarioPresencia(loginPendienteNombre);
+        const nombre = loginPendienteNombre;
+        rtdb.ref("presencia/" + clave).update({ forzarLogout: true }).finally(() => {
+            loginPendienteNombre = null;
+            document.getElementById('modalSesionActivaOtroLugar').style.display = 'none';
+            finalizarLogin(nombre);
+        });
+    }
+
+    function elegirMantenerAmbasSesiones() {
+        if (!loginPendienteNombre) return;
+        const nombre = loginPendienteNombre;
+        loginPendienteNombre = null;
+        document.getElementById('modalSesionActivaOtroLugar').style.display = 'none';
+        finalizarLogin(nombre);
+    }
+
+    function finalizarLogin(nombre) {
+        usuarioActivo = nombre;
+        // sessionStorage: la sesión se pierde al cerrar la pestaña/navegador
+        // o apagar el equipo, así que siempre pedirá usuario y contraseña de nuevo.
+        sessionStorage.setItem('inv_session_user', usuarioActivo);
+        verificarSesionActiva();
+        mostrarBienvenida();
     }
 
     function mostrarBienvenida() {
@@ -1298,7 +1382,8 @@
 
     function cerrarSesion() {
         desvincularEscuchaMensajes();
-        localStorage.removeItem('inv_session_user');
+        detenerPresencia();
+        sessionStorage.removeItem('inv_session_user');
         usuarioActivo = "";
         document.getElementById('displayUser').textContent = "@?";
         verificarSesionActiva();
@@ -1308,6 +1393,64 @@
         if (usuarioActivo === "ahuingor") return true;
         let datosUsuario = Object.values(usuariosPermitidos).find(u => u.nombre.toLowerCase() === usuarioActivo.toLowerCase());
         return !!(datosUsuario && datosUsuario.permisos && datosUsuario.permisos.admin_total);
+    }
+
+    // ===== Presencia (usuarios en línea), para saber si un usuario ya tiene
+    // sesión abierta en otro dispositivo/navegador y poder forzar su cierre. =====
+    let presenciaRefActual = null;
+    let intervaloPresenciaHeartbeat = null;
+
+    function claveUsuarioPresencia(nombre) {
+        return (nombre || "").replace(/[.#$\[\]@]/g, '_');
+    }
+
+    function iniciarPresencia() {
+        if (!usuarioActivo) return;
+        const clave = claveUsuarioPresencia(usuarioActivo);
+        presenciaRefActual = rtdb.ref("presencia/" + clave);
+
+        rtdb.ref(".info/connected").on("value", (snap) => {
+            if (snap.val() === true && presenciaRefActual) {
+                presenciaRefActual.onDisconnect().update({
+                    online: false,
+                    ultimaConexion: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    presenciaRefActual.update({
+                        usuario: usuarioActivo,
+                        online: true,
+                        ultimaConexion: firebase.database.ServerValue.TIMESTAMP,
+                        forzarLogout: false
+                    });
+                });
+            }
+        });
+
+        // Si se inicia sesión con este mismo usuario desde otro dispositivo
+        // (o un administrador fuerza el cierre), "forzarLogout" pasa a true
+        // y este listener cierra la sesión localmente.
+        presenciaRefActual.child("forzarLogout").on("value", (snap) => {
+            if (snap.val() === true) {
+                presenciaRefActual.child("forzarLogout").set(false);
+                alert("Tu sesión se cerró porque se inició sesión con este mismo usuario desde otro dispositivo (o un administrador la cerró).");
+                cerrarSesion();
+            }
+        });
+
+        if (intervaloPresenciaHeartbeat) clearInterval(intervaloPresenciaHeartbeat);
+        intervaloPresenciaHeartbeat = setInterval(() => {
+            if (presenciaRefActual) presenciaRefActual.update({ online: true, ultimaConexion: firebase.database.ServerValue.TIMESTAMP });
+        }, 60000);
+    }
+
+    function detenerPresencia() {
+        if (intervaloPresenciaHeartbeat) { clearInterval(intervaloPresenciaHeartbeat); intervaloPresenciaHeartbeat = null; }
+        rtdb.ref(".info/connected").off();
+        if (presenciaRefActual) {
+            presenciaRefActual.child("forzarLogout").off();
+            presenciaRefActual.onDisconnect().cancel();
+            presenciaRefActual.update({ online: false, ultimaConexion: firebase.database.ServerValue.TIMESTAMP });
+        }
+        presenciaRefActual = null;
     }
 
     function puedeBorrarHistorial() {
@@ -1382,8 +1525,10 @@
             localStorage.setItem('rackFijoAuto', valor); 
             if (modoValidarRutaActivo) {
                 document.getElementById('dispRuta').textContent = valor.toUpperCase().trim() || "-";
-                actualizarUIRutaLocal();
             }
+            // El resumen por ubicación (PL/Folios/Bultos) es independiente
+            // del modo: se recalcula siempre que cambia la Ubicación.
+            actualizarUIRutaLocal();
         } else if(campo === 'zona') {
             document.getElementById('inpZona').value = valor;
             localStorage.setItem('zonaFijaAuto', valor);
@@ -1395,7 +1540,10 @@
 
     // Controla qué opciones del selector "OPCIÓN" (inpCat) se muestran según el modo activo:
     // - Con el modo RUTA activo: el selector muestra ÚNICAMENTE "RUTEO IL" y "RUTEO IL (MULTIFOLIOS)" (nada más).
-    // - Fuera del modo RUTA: esas dos opciones se ocultan y se muestran las demás normalmente.
+    // - Con el modo CD VES activo (submodo de RUTA), esas mismas dos opciones
+    //   cambian de texto/valor a "CD VES IL" y "CD VES IL (MULTIFOLIOS)", para
+    //   que la categoría guardada distinga que el escaneo vino de CD VES.
+    // - Fuera del modo RUTA: esas opciones se ocultan y se muestran las demás normalmente.
     // - En modo VALIDAR (Control de Seguridad) no debe aparecer ninguna opción: se oculta el selector completo.
     function sincronizarOpcionesCatSegunModo() {
         const sel = document.getElementById('inpCat');
@@ -1403,8 +1551,19 @@
 
         sel.style.display = modoControlSeguridadActivo ? 'none' : '';
 
+        const optSimple = Array.from(sel.options).find(o => o.value === 'RUTEO IL' || o.value === 'CD VES IL');
+        const optMulti = Array.from(sel.options).find(o => o.value === 'RUTEO IL (MULTIFOLIOS)' || o.value === 'CD VES IL (MULTIFOLIOS)');
+        if (optSimple) {
+            optSimple.value = modoCDVESActivo ? 'CD VES IL' : 'RUTEO IL';
+            optSimple.textContent = modoCDVESActivo ? 'CD VES IL' : 'RUTEO IL';
+        }
+        if (optMulti) {
+            optMulti.value = modoCDVESActivo ? 'CD VES IL (MULTIFOLIOS)' : 'RUTEO IL (MULTIFOLIOS)';
+            optMulti.textContent = modoCDVESActivo ? 'CD VES IL (MULTIFOLIOS)' : 'RUTEO IL (MULTIFOLIOS)';
+        }
+
         Array.from(sel.options).forEach(opt => {
-            const esRuteo = (opt.value === 'RUTEO IL' || opt.value === 'RUTEO IL (MULTIFOLIOS)');
+            const esRuteo = (opt.value === 'RUTEO IL' || opt.value === 'RUTEO IL (MULTIFOLIOS)' || opt.value === 'CD VES IL' || opt.value === 'CD VES IL (MULTIFOLIOS)');
             opt.style.display = modoValidarRutaActivo
                 ? (esRuteo ? '' : 'none')
                 : (esRuteo ? 'none' : '');
@@ -1412,7 +1571,7 @@
 
         const valorSigueVisible = Array.from(sel.options).some(o => o.value === sel.value && o.style.display !== 'none');
         if (!valorSigueVisible) {
-            sel.value = modoValidarRutaActivo ? 'RUTEO IL' : '-';
+            sel.value = modoValidarRutaActivo ? (modoCDVESActivo ? 'CD VES IL' : 'RUTEO IL') : '-';
         }
     }
 
@@ -1427,11 +1586,23 @@
             procesandoExclusividad = false;
         }
 
+        // Si se desactiva "Modo Ruta" (por el usuario o porque otro modo lo
+        // desactivó por exclusividad), también se sale de CD VES, que
+        // depende de Modo Ruta internamente.
+        if (!modoValidarRutaActivo && modoCDVESActivo) {
+            document.getElementById('chkModoCDVES').checked = false;
+            toggleModoCDVES();
+        }
+
         const bloqueValores = document.getElementById('bloqueValidarRutaLocal');
         const itemsDashboardRuta = document.querySelectorAll('.mod-ruta-item');
         const inp = document.getElementById('inpScan');
         const inpUbicVal = document.getElementById('inpUbic').value.toUpperCase().trim();
 
+        // El panel "RESUMEN POR UBICACIÓN (SINCRO GENERAL)" (bloqueValidarRutaLocal)
+        // solo debe verse en Modo Ruta y en CD VES (que activa este mismo
+        // modo por dentro), con la misma lógica de siempre (agrupa por PL lo
+        // escaneado bajo la Ubicación/Ruta que esté escrita en ese momento).
         if(modoValidarRutaActivo) {
             bloqueValores.style.display = "block";
             itemsDashboardRuta.forEach(el => el.style.display = "block");
@@ -1451,6 +1622,92 @@
         inp.focus();
         sincronizarOpcionesCatSegunModo();
         actualizarVisibilidadZonaChips();
+    }
+
+    // ======================================
+    // MODO "ESCANEOS CD VES"
+    // Reutiliza el motor completo de "Modo Ruta" (misma comparación contra
+    // la Base de Ruta subida, mismo resumen de PL/Folios/Bultos, mismos
+    // conteos de "En Ruta (Base)"/"Faltantes"), fijando la Ubicación en
+    // RUTA_FIJA_CDVES automáticamente. Al activarlo se pide la ZONA DE
+    // ENCAJE DEL ROLL (dónde está estacionado el roll), que se guarda con
+    // cada escaneo hasta que se desactive el modo. Si mientras se escanea
+    // cambia el PL respecto al último escaneado, se pregunta si la zona de
+    // encaje del roll también cambió: si dice que sí, permite actualizarla;
+    // si dice que no, la deja igual pero de todas formas permite continuar
+    // el escaneo con el nuevo PL. Los campos Día/Secuencia/Ruta Asignada
+    // (irrelevantes aquí, ya que la ruta siempre es fija) se ocultan
+    // mientras el modo está activo.
+    // ======================================
+    function toggleModoCDVES() {
+        const activando = document.getElementById('chkModoCDVES').checked;
+
+        if (activando) {
+            const rollIngresado = prompt('Ingresa la ZONA DE ENCAJE DEL ROLL para esta sesión de Escaneos CD VES:\n(Se guardará con cada escaneo. Si detecta un cambio de PL, te preguntará si esta zona también cambió.)');
+            if (!rollIngresado || !rollIngresado.trim()) {
+                document.getElementById('chkModoCDVES').checked = false;
+                return;
+            }
+            rollActivoCDVES = rollIngresado.trim().toUpperCase();
+        } else {
+            rollActivoCDVES = "";
+        }
+
+        ultimoPLDetectadoCDVES = null;
+        modoCDVESActivo = activando;
+
+        if (modoCDVESActivo && !procesandoExclusividad) {
+            procesandoExclusividad = true;
+            if(document.getElementById('chkModoImprimir').checked) { document.getElementById('chkModoImprimir').checked = false; toggleModoImprimirLocal(); }
+            if(document.getElementById('chkControlSeguridad').checked) { document.getElementById('chkControlSeguridad').checked = false; toggleControlSeguridad(); }
+            if(document.getElementById('chkEscaneoAgil').checked) { document.getElementById('chkEscaneoAgil').checked = false; toggleEscaneoAgil(); }
+            procesandoExclusividad = false;
+        }
+
+        const inpUbic = document.getElementById('inpUbic');
+        const inp = document.getElementById('inpScan');
+        const itemsOcultarCDVES = document.querySelectorAll('.oculta-en-cdves');
+        const bloqueRoll = document.getElementById('bloqueRollCDVES');
+        const dispRollEl = document.getElementById('dispRollCDVES');
+
+        if (modoCDVESActivo) {
+            // CD VES depende del motor de Modo Ruta: si no estaba activo, se
+            // activa ahora (sin volver a pasar por la exclusividad de arriba,
+            // ya se resolvió justo antes).
+            if (!document.getElementById('chkModoValidarRuta').checked) {
+                document.getElementById('chkModoValidarRuta').checked = true;
+                toggleModoValidarRuta();
+            }
+
+            inpUbic.value = RUTA_FIJA_CDVES;
+            inpUbic.setAttribute('readonly', 'readonly');
+            inpUbic.style.background = 'rgba(139,92,246,0.08)';
+            sincronizarControlesEspejo('ubic', RUTA_FIJA_CDVES);
+
+            itemsOcultarCDVES.forEach(el => el.style.display = "none");
+            if (bloqueRoll) bloqueRoll.style.display = "flex";
+            if (dispRollEl) dispRollEl.textContent = rollActivoCDVES || "-";
+
+            inp.placeholder = "🏭 ESCANEAR CD VES...";
+            actualizarUIRutaLocal();
+        } else {
+            inpUbic.removeAttribute('readonly');
+            inpUbic.style.background = '';
+            inpUbic.value = '';
+            sincronizarControlesEspejo('ubic', '');
+
+            itemsOcultarCDVES.forEach(el => el.style.display = "");
+            if (bloqueRoll) bloqueRoll.style.display = "none";
+            if (dispRollEl) dispRollEl.textContent = "-";
+
+            if (modoValidarRutaActivo) {
+                inp.placeholder = "🚚 ESCANEAR EN RUTA ACTUAL...";
+                actualizarUIRutaLocal();
+            }
+        }
+
+        sincronizarOpcionesCatSegunModo();
+        inp.focus();
     }
 
     function toggleModoImprimirLocal() {
@@ -1481,9 +1738,16 @@
     // ======================================
     // MODO CONTROL DE SEGURIDAD (VALIDACIÓN)
     // ======================================
-    const CATS_PENDIENTES_CS = ["RUTEO IL", "RUTEO IL (MULTIFOLIOS)"];
+    const CATS_PENDIENTES_CS = ["RUTEO IL", "RUTEO IL (MULTIFOLIOS)", "CD VES IL", "CD VES IL (MULTIFOLIOS)"];
     const CATS_APROBADAS_CS = ["APROBADO", "APROBADO MULTIFOLIOS"];
     const CATS_TOTAL_CS = CATS_PENDIENTES_CS.concat(CATS_APROBADAS_CS);
+
+    // "RUTEO IL (MULTIFOLIOS)" y "CD VES IL (MULTIFOLIOS)" son las dos
+    // variantes "multifolios" (según si el escaneo vino de Modo Ruta normal
+    // o de Modo CD VES); ambas aprueban hacia "APROBADO MULTIFOLIOS".
+    function esCategoriaMultifoliosCS(cat) {
+        return cat === "RUTEO IL (MULTIFOLIOS)" || cat === "CD VES IL (MULTIFOLIOS)";
+    }
 
     function toggleControlSeguridad() {
         modoControlSeguridadActivo = document.getElementById('chkControlSeguridad').checked;
@@ -1654,7 +1918,7 @@
             const completo = nuevosEscaneados >= total;
             const actualizacion = { bultosValidados: nuevosEscaneados };
             if (completo) {
-                actualizacion.cat = pendiente.cat === "RUTEO IL" ? "APROBADO" : "APROBADO MULTIFOLIOS";
+                actualizacion.cat = esCategoriaMultifoliosCS(pendiente.cat) ? "APROBADO MULTIFOLIOS" : "APROBADO";
                 actualizacion.validadoPor = usuarioActivo;
                 actualizacion.horaValidacion = obtenerFechaYHoraActual();
             }
@@ -1682,25 +1946,15 @@
             return;
         }
 
-        // Ya estaba completo/aprobado en esta ruta/zona: se interpreta como un bulto EXTRA
-        // del mismo seguimiento (por ejemplo, encontrado más tarde), y se suma al total.
+        // SEGURIDAD: si este folio ya fue validado/aprobado en esta ruta y zona
+        // (en este turno o en cualquier otro, ya que "scans" trae el histórico
+        // completo de Firebase, no solo la sesión actual), se bloquea el
+        // reingreso por completo. Ya NO se permite sumarlo como "bulto extra":
+        // una vez aprobado, no se debe volver a escanear.
         const yaValidado = scans.find(s => s.guia === val && s.ubic === rutaActiva && s.zona === zonaActiva && CATS_APROBADAS_CS.includes(s.cat));
         if (yaValidado) {
-            const { total, escaneados } = leerProgresoBultosCS(yaValidado);
-            const nuevoTotal = total + 1;
-            const nuevosEscaneados = escaneados + 1;
-            rtdb.ref("escaneos_compartidos/" + yaValidado.key).update({
-                bul: nuevoTotal,
-                bultosValidados: nuevosEscaneados
-            }).then(() => {
-                emitirSonidoCoincidenciaRuta();
-                const t = document.getElementById('toast');
-                t.textContent = `➕ BULTO EXTRA AGREGADO (${nuevosEscaneados} DE ${nuevoTotal})`;
-                t.style.background = "#0ea5e9";
-                t.style.display = "block";
-                setTimeout(() => { t.style.display = "none"; t.textContent = "ÉXITO ✓"; }, 1600);
-                inp.value = ''; inp.focus();
-            });
+            mostrarModalRutaAlert('warning', '🔒 FOLIO YA VALIDADO', `El folio <b>${val}</b> ya fue validado y aprobado en el Control de Seguridad de la ruta <b>${rutaActiva}</b>, zona <b>${zonaActiva}</b>.<br><br>👤 Usuario: <b>${yaValidado.validadoPor || yaValidado.usuario || 'N/D'}</b><br>🕒 Hora: <b>${yaValidado.horaValidacion || yaValidado.hora || 'N/D'}</b><br><br>No se permite volver a escanearlo.`, 0);
+            inp.value = ''; inp.focus();
             return;
         }
 
@@ -1942,7 +2196,7 @@
             rtdb.ref("escaneos_compartidos/" + key).update({
                 bul: nuevoTotal,
                 bultosValidados: nuevoTotal,
-                cat: registro.cat === "RUTEO IL" ? "APROBADO" : "APROBADO MULTIFOLIOS",
+                cat: esCategoriaMultifoliosCS(registro.cat) ? "APROBADO MULTIFOLIOS" : "APROBADO",
                 validadoPor: usuarioActivo,
                 horaValidacion: obtenerFechaYHoraActual(),
                 bultoRetiradoForzado: true
@@ -2107,7 +2361,9 @@
             const badgeTotalBaseRutaMenu = document.getElementById('badgeTotalBaseRutaMenu');
             if (badgeTotalBaseRutaMenu) badgeTotalBaseRutaMenu.textContent = baseDatosRutaNube.length;
             actualizarIndicadorBaseRuta();
-            if(modoValidarRutaActivo) actualizarUIRutaLocal();
+            // El resumen por ubicación es independiente del modo: se
+            // refresca siempre que cambia la Base de Ruta en la nube.
+            actualizarUIRutaLocal();
         });
 
         rtdb.ref("escaneos_compartidos").on("value", (snapshot) => {
@@ -2129,9 +2385,9 @@
             if(document.getElementById('modalConsultaAdmin').style.display === 'flex') {
                 ejecutarFiltroAdmin();
             }
-            if(modoValidarRutaActivo) {
-                actualizarUIRutaLocal();
-            }
+            // El resumen por ubicación es independiente del modo: se
+            // refresca siempre que llegan escaneos nuevos.
+            actualizarUIRutaLocal();
             if(modoControlSeguridadActivo) {
                 actualizarPanelControlSeguridad();
             }
@@ -2236,7 +2492,7 @@
         const registrosEnRuta = baseDatosRutaNube.filter(b => b.ruta === rutaActiva);
         const totalEnBaseRuta = registrosEnRuta.length;
         
-        const escEnRuta = scans.filter(e => e.ruta === rutaActiva && !(e.cat && e.cat.startsWith("IMPRESO")));
+        const escEnRuta = scans.filter(e => e.ubic === rutaActiva && !(e.cat && e.cat.startsWith("IMPRESO")));
         const totalEscaneadosUnicos = escEnRuta.length;
 
         document.getElementById('cantSubida').textContent = totalEnBaseRuta;
@@ -2255,7 +2511,7 @@
             return;
         }
 
-        const escaneosFiltrados = scans.filter(e => e.ruta === rutaActiva && !(e.cat && e.cat.startsWith("IMPRESO")));
+        const escaneosFiltrados = scans.filter(e => e.ubic === rutaActiva && !(e.cat && e.cat.startsWith("IMPRESO")));
         if (escaneosFiltrados.length === 0) {
             const sinFoliosHtml = '<div class="resumen-vacio">No hay folios en el servidor bajo esta ruta.</div>';
             contenedor.innerHTML = sinFoliosHtml;
@@ -2659,7 +2915,7 @@
             sec: coincidenciaLocal ? coincidenciaLocal.secuencia : "S/S",
             bul: parseInt(document.getElementById('inpBultos').value) || 1,
             ubic: rutaActualTarget,
-            zona: zonaActivaTarget,
+            zona: (modoCDVESActivo && zonaActivaTarget && !zonaActivaTarget.endsWith('-CDVES')) ? (zonaActivaTarget + '-CDVES') : zonaActivaTarget,
             zonaEsperada: zonaEsperada || null,
             cat: document.getElementById('inpCat').value.toUpperCase() || "-",
             hora: obtenerFechaYHoraActual(),
@@ -2667,6 +2923,14 @@
             usuario: usuarioActivo,
             modo: "VALIDAR_RUTA"
         };
+
+        // Escaneos CD VES: se etiquetan con el ROLL activo de la sesión y una
+        // marca "esCDVES" para poder distinguirlos y agregar la columna
+        // "ROLL" en la descarga a Excel.
+        if (modoCDVESActivo) {
+            nuevoRegistroRuta.roll = rollActivoCDVES || "-";
+            nuevoRegistroRuta.esCDVES = true;
+        }
 
         document.getElementById('dispDia').textContent = nuevoRegistroRuta.dia;
         document.getElementById('dispRuta').textContent = nuevoRegistroRuta.ruta;
@@ -2829,17 +3093,36 @@
                 return;
             }
 
+            // CD VES: si el PL escaneado cambió respecto al último, se
+            // pregunta si la Zona de encaje del ROLL también cambió. Sea
+            // cual sea la respuesta, el escaneo con el nuevo PL continúa;
+            // solo cambia si se actualiza o no la zona de encaje del roll.
+            if (modoCDVESActivo && ultimoPLDetectadoCDVES && ultimoPLDetectadoCDVES !== zonaActivaTarget) {
+                const cambioZonaRoll = confirm(`Se detectó un cambio de PL: de "${ultimoPLDetectadoCDVES}" a "${zonaActivaTarget}".\n\n¿La Zona de encaje del ROLL también cambió?`);
+                if (cambioZonaRoll) {
+                    const nuevaZonaRoll = prompt('Ingresa la nueva Zona de encaje del ROLL:', rollActivoCDVES || '');
+                    if (nuevaZonaRoll && nuevaZonaRoll.trim()) {
+                        rollActivoCDVES = nuevaZonaRoll.trim().toUpperCase();
+                        const dispRollEl = document.getElementById('dispRollCDVES');
+                        if (dispRollEl) dispRollEl.textContent = rollActivoCDVES;
+                    }
+                }
+                // Si responde que no, se mantiene la Zona de encaje del ROLL
+                // actual y el escaneo con el nuevo PL se permite igual.
+            }
+            if (modoCDVESActivo) ultimoPLDetectadoCDVES = zonaActivaTarget;
+
             const jornadaActual = obtenerJornadaLogica(new Date());
 
             if (zonaActivaTarget.startsWith('PL')) {
                 const zonaDuplicada = scans.find(e => 
                     e.zona === zonaActivaTarget && 
-                    e.ruta !== rutaActualTarget && 
+                    e.ubic !== rutaActualTarget && 
                     !(e.cat && e.cat.startsWith("IMPRESO")) && 
                     e.hora && obtenerJornadaLogica(parsearHoraAObj(e.hora)) === jornadaActual
                 );
                 if (zonaDuplicada) {
-                    mostrarModalRutaAlert('error', '❌ ZONA OCUPADA', `La zona <b>${zonaActivaTarget}</b> ya está registrada en la <b>${zonaDuplicada.ruta}</b>.`, 5000);
+                    mostrarModalRutaAlert('error', '❌ ZONA OCUPADA', `La zona <b>${zonaActivaTarget}</b> ya está registrada en la <b>${zonaDuplicada.ubic}</b>.`, 5000);
                     inp.value = ''; inp.focus();
                     return;
                 }
@@ -3985,6 +4268,7 @@
             "Ubicación": s.ubic || "-",
             "Zona": s.zona || "-",
             "Categoría": s.cat || "-",
+            "ROLL": s.roll || "",
             "Fecha y Hora Captura": s.hora || "",
             "Operario Log": s.usuario || "Desconocido"
         }));
