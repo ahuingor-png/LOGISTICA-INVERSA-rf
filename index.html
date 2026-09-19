@@ -656,9 +656,10 @@
 <div class="main-content">
     
     <div class="dashboard-compact">
-        <div class="stat-card-mini oculta-en-cdves"><div class="stat-label-mini">Día</div><div id="dispDia" class="stat-value-mini">-</div></div>
-        <div class="stat-card-mini oculta-en-cdves"><div class="stat-label-mini">Secuencia</div><div id="dispSec" class="stat-value-mini">-</div></div>
-        <div class="stat-card-mini oculta-en-cdves" style="grid-column: span 2;"><div class="stat-label-mini">Ruta Asignada</div><div id="dispRuta" class="stat-value-mini" style="font-size:14px;">-</div></div>
+        <div class="stat-card-mini oculta-en-cdves" id="bloqueDispDia"><div class="stat-label-mini">Día</div><div id="dispDia" class="stat-value-mini">-</div></div>
+        <div class="stat-card-mini oculta-en-cdves" id="bloqueDispSec"><div class="stat-label-mini">Secuencia</div><div id="dispSec" class="stat-value-mini">-</div></div>
+        <div class="stat-card-mini oculta-en-cdves" id="bloqueDispRuta" style="grid-column: span 2;"><div class="stat-label-mini">Ruta Asignada</div><div id="dispRuta" class="stat-value-mini" style="font-size:14px;">-</div></div>
+        <div class="stat-card-mini oculta-en-cdves" id="bloqueSinProgUnico" style="display:none; grid-column: span 2; background:rgba(239,68,68,0.07); border:1px solid var(--danger);"><div class="stat-label-mini" style="color:var(--danger);">⚠️ ESTADO</div><div class="stat-value-mini" style="color:var(--danger); font-size:14px;">SIN PROGRAMACIÓN</div></div>
 
         <div class="stat-card-mini mod-cdves-item" id="bloqueRollCDVES" style="display:none; grid-column: span 2; background:rgba(139,92,246,0.07); border:1px solid #8b5cf6;"><div class="stat-label-mini" style="color:#8b5cf6;">📍 ZONA DE ENCAJE DEL ROLL</div><div id="dispRollCDVES" class="stat-value-mini" style="color:#8b5cf6;">-</div></div>
 
@@ -969,7 +970,7 @@
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--print-color);">
         <div style="font-size: 30px; margin-bottom: 10px;">🖨️</div>
         <h4 style="color:var(--print-color); font-weight:900; margin-bottom: 5px;">¿REIMPRIMIR ETIQUETA?</h4>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">La guía <b id="txtReimprimirGuia" style="color:var(--text-main);"></b> ya fue escaneada e impresa anteriormente hoy.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">La guía <b id="txtReimprimirGuia" style="color:var(--text-main);"></b> ya fue escaneada e impresa anteriormente hoy a las <b id="txtReimprimirHora" style="color:var(--text-main);"></b>.</p>
         <div style="display: flex; gap: 8px; justify-content: center;">
             <button onclick="ejecutarReimpresion()" style="flex:1; background: var(--print-color); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800;">✓ REIMPRIMIR</button>
             <button onclick="cerrarModalReimprimir()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800;">CANCELAR</button>
@@ -2480,6 +2481,7 @@
         document.getElementById('txtSinProgGuia').textContent = guia;
         document.getElementById('modalSinProg').style.display = 'flex';
         playBeep(300);
+        setTimeout(() => { cerrarModalSinProg(); }, 1200);
     }
     
     function cerrarModalSinProg() {
@@ -2747,6 +2749,34 @@
     function limpiarTexto(t) { return t ? t.toString().trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : ""; }
     function limpiarCodigo(codigo) { return codigo.trim().replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase(); }
 
+    // Pinta Día/Secuencia/Ruta cuando hay coincidencia en la base de ruta,
+    // o colapsa esos 3 bloques en uno solo de "SIN PROGRAMACIÓN" cuando no
+    // se encontró ninguna coincidencia (dia, ruta y sec todos vacíos).
+    function actualizarDispRutaUI(info) {
+        const hayCoincidencia = !!(info && (info.dia || info.ruta || info.sec));
+        const bloqueDia = document.getElementById('bloqueDispDia');
+        const bloqueSec = document.getElementById('bloqueDispSec');
+        const bloqueRuta = document.getElementById('bloqueDispRuta');
+        const bloqueUnico = document.getElementById('bloqueSinProgUnico');
+
+        document.getElementById('dispDia').textContent = (info && info.dia) || "SIN PROG.";
+        document.getElementById('dispRuta').textContent = (info && info.ruta) || "SIN PROG.";
+        document.getElementById('dispSec').textContent = (info && info.sec) || "S/S";
+
+        if (hayCoincidencia) {
+            bloqueDia.style.display = "";
+            bloqueSec.style.display = "";
+            bloqueRuta.style.display = "";
+            bloqueUnico.style.display = "none";
+        } else {
+            bloqueDia.style.display = "none";
+            bloqueSec.style.display = "none";
+            bloqueRuta.style.display = "none";
+            bloqueUnico.style.display = "";
+        }
+    }
+
+
     function buscarColumna(fila, palabras) {
         const key = Object.keys(fila).find(k => {
             const kClean = limpiarTexto(k);
@@ -2758,6 +2788,7 @@
     function abrirModalReimprimir(registro) {
         guiaAReimprimir = registro;
         document.getElementById('txtReimprimirGuia').textContent = registro.guia;
+        document.getElementById('txtReimprimirHora').textContent = registro.hora || "N/D";
         document.getElementById('modalReimprimir').style.display = 'flex';
         playBeep(200);
     }
@@ -2953,9 +2984,7 @@
             sec: encontrado ? buscarColumna(encontrado, ["SECUENCIA", "SEC"]) : null
         };
 
-        document.getElementById('dispDia').textContent = info.dia || "SIN PROG.";
-        document.getElementById('dispRuta').textContent = info.ruta || "SIN PROG.";
-        document.getElementById('dispSec').textContent = info.sec || "S/S";
+        actualizarDispRutaUI(info);
         document.getElementById('dispLast').textContent = val;
 
         // --- ALERTAS ESPECIALES (DOFFA / CUSTODIA SELLER / POR DEVOLVER BU) ---
@@ -3037,9 +3066,7 @@
                 sec: encontradoPL ? buscarColumna(encontradoPL, ["SECUENCIA", "SEC"]) : null
             };
 
-            document.getElementById('dispDia').textContent = infoPL.dia || "SIN PROG.";
-            document.getElementById('dispRuta').textContent = infoPL.ruta || "SIN PROG.";
-            document.getElementById('dispSec').textContent = infoPL.sec || "S/S";
+            actualizarDispRutaUI(infoPL);
             document.getElementById('dispLast').textContent = val;
 
             const t = document.getElementById('toast');
@@ -3221,9 +3248,7 @@
         const casoEspecial = detectarCasoEspecialGuia(encontrado);
 
         if (casoEspecial) {
-            document.getElementById('dispDia').textContent = info.dia || "SIN PROG.";
-            document.getElementById('dispRuta').textContent = info.ruta || "SIN PROG.";
-            document.getElementById('dispSec').textContent = info.sec || "S/S";
+            actualizarDispRutaUI(info);
             document.getElementById('dispLast').textContent = val;
             inp.value = '';
 
@@ -3254,9 +3279,7 @@
             sec: encontrado ? buscarColumna(encontrado, ["SECUENCIA", "SEC"]) : null
         };
 
-        document.getElementById('dispDia').textContent = info.dia || "SIN PROG.";
-        document.getElementById('dispRuta').textContent = info.ruta || "SIN PROG.";
-        document.getElementById('dispSec').textContent = info.sec || "S/S";
+        actualizarDispRutaUI(info);
         document.getElementById('dispLast').textContent = val;
 
         agilGuiaPendiente = val;
@@ -3855,7 +3878,7 @@
 
     function abrirModalDup(item, infoContexto) {
         duplicadoKey = item.key;
-        document.getElementById('modalMsg').textContent = `Escaneado por '${item.usuario || 'Desconocido'}'.`;
+        document.getElementById('modalMsg').textContent = `Escaneado por '${item.usuario || 'Desconocido'}' a las ${item.hora || 'N/D'}.`;
         document.getElementById('lblDupCodigo').textContent = item.guia || infoContexto.guia || "-";
         document.getElementById('lblDupDia').textContent = item.dia || infoContexto.dia || "SIN PROG.";
         document.getElementById('lblDupSec').textContent = item.sec || infoContexto.sec || "S/S";
