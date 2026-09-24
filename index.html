@@ -16,6 +16,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap');
@@ -1144,6 +1145,11 @@
 
     firebase.initializeApp(firebaseConfig);
     const rtdb = firebase.database();
+    // Auth anónima: requerida por las Reglas de Firebase (auth != null).
+    // authListo se resuelve (con o sin éxito) para arrancar la app después de intentar entrar.
+    window.authListo = firebase.auth().signInAnonymously().catch(err => {
+        console.error("Error de auth anónima:", err);
+    });
 
     function parsearHoraAObj(horaStr) {
         if(!horaStr) return new Date(0);
@@ -2397,7 +2403,8 @@
         });
     }
 
-    window.onload = () => {
+    window.onload = () => { window.authListo.then(iniciarAppRF); };
+    const iniciarAppRF = () => {
         const savedTheme = localStorage.getItem('inv_theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         
@@ -4927,6 +4934,7 @@
 
 
     // Escucha en tiempo real del nodo propio de reprogramaciones (misma base Firebase)
+    window.authListo.then(() => {
     rtdb.ref("escaneos_repros").on("value", (snapshot) => {
         const data = snapshot.val() || {};
         registrosRepro = Object.values(data).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
@@ -4937,6 +4945,7 @@
     rtdb.ref("reglas_repro").on("value", (snapshot) => {
         const data = snapshot.val() || {};
         reglasRepro = Object.values(data);
+    });
     });
 
     // Resumen por ruta: total de guías en la base central vs. escaneadas en Repros vs. faltantes
