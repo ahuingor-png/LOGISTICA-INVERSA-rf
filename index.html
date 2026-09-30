@@ -1838,6 +1838,8 @@
     const CATS_PENDIENTES_CS = ["RUTEO IL", "RUTEO IL (MULTIFOLIOS)", "CD VES IL", "CD VES IL (MULTIFOLIOS)"];
     const CATS_APROBADAS_CS = ["APROBADO", "APROBADO MULTIFOLIOS"];
     const CATS_TOTAL_CS = CATS_PENDIENTES_CS.concat(CATS_APROBADAS_CS);
+    // Registros de Control de Seguridad vigentes (excluye los ya liberados desde REVERSA tras el despacho)
+    const scansCS = () => scans.filter(s => !s.liberado);
 
     // "RUTEO IL (MULTIFOLIOS)" y "CD VES IL (MULTIFOLIOS)" son las dos
     // variantes "multifolios" (según si el escaneo vino de Modo Ruta normal
@@ -1956,7 +1958,7 @@
         }
         if (inpScan) inpScan.disabled = false;
 
-        const registrosRuta = scans.filter(s => s.ubic === rutaActiva && CATS_TOTAL_CS.includes(s.cat));
+        const registrosRuta = scansCS().filter(s => s.ubic === rutaActiva && CATS_TOTAL_CS.includes(s.cat));
         const aprobadosRuta = registrosRuta.filter(s => CATS_APROBADAS_CS.includes(s.cat));
         document.getElementById('csRutaTotal').textContent = registrosRuta.length;
         document.getElementById('csRutaAprobados').textContent = aprobadosRuta.length;
@@ -2016,7 +2018,7 @@
             return;
         }
 
-        const pendiente = scans.find(s => s.guia === val && s.ubic === rutaActiva && s.zona === zonaActiva && CATS_PENDIENTES_CS.includes(s.cat));
+        const pendiente = scansCS().find(s => s.guia === val && s.ubic === rutaActiva && s.zona === zonaActiva && CATS_PENDIENTES_CS.includes(s.cat));
 
         if (pendiente) {
             const { total, escaneados } = leerProgresoBultosCS(pendiente);
@@ -2032,7 +2034,7 @@
                 emitirSonidoCoincidenciaRuta();
                 document.getElementById('dispLast').textContent = val;
 
-                const registrosZona = scans.filter(s => s.ubic === rutaActiva && s.zona === zonaActiva && CATS_TOTAL_CS.includes(s.cat));
+                const registrosZona = scansCS().filter(s => s.ubic === rutaActiva && s.zona === zonaActiva && CATS_TOTAL_CS.includes(s.cat));
                 const faltanZona = registrosZona.filter(s => {
                     if (s.guia === val) return !completo;
                     return CATS_PENDIENTES_CS.includes(s.cat);
@@ -2057,14 +2059,14 @@
         // completo de Firebase, no solo la sesión actual), se bloquea el
         // reingreso por completo. Ya NO se permite sumarlo como "bulto extra":
         // una vez aprobado, no se debe volver a escanear.
-        const yaValidado = scans.find(s => s.guia === val && s.ubic === rutaActiva && s.zona === zonaActiva && CATS_APROBADAS_CS.includes(s.cat));
+        const yaValidado = scansCS().find(s => s.guia === val && s.ubic === rutaActiva && s.zona === zonaActiva && CATS_APROBADAS_CS.includes(s.cat));
         if (yaValidado) {
             mostrarModalRutaAlert('warning', '🔒 FOLIO YA VALIDADO', `El folio <b>${val}</b> ya fue validado y aprobado en el Control de Seguridad de la ruta <b>${rutaActiva}</b>, zona <b>${zonaActiva}</b>.<br><br>👤 Usuario: <b>${yaValidado.validadoPor || yaValidado.usuario || 'N/D'}</b><br>🕒 Hora: <b>${yaValidado.horaValidacion || yaValidado.hora || 'N/D'}</b><br><br>No se permite volver a escanearlo.`, 0);
             inp.value = ''; inp.focus();
             return;
         }
 
-        const otraZona = scans.find(s => s.guia === val && CATS_TOTAL_CS.includes(s.cat));
+        const otraZona = scansCS().find(s => s.guia === val && CATS_TOTAL_CS.includes(s.cat));
         if (otraZona) {
             mostrarModalRutaAlert('warning', '⚠️ RUTA/ZONA INCORRECTA', `El folio <b>${val}</b> está registrado en <b>${otraZona.ubic}</b>, zona <b>${otraZona.zona}</b>, no en la ruta/zona activa.`, 4000);
             inp.value = ''; inp.focus();
@@ -2214,7 +2216,7 @@
             return;
         }
 
-        const registrosZona = scans.filter(s => s.ubic === rutaActiva && s.zona === zonaActiva && CATS_TOTAL_CS.includes(s.cat));
+        const registrosZona = scansCS().filter(s => s.ubic === rutaActiva && s.zona === zonaActiva && CATS_TOTAL_CS.includes(s.cat));
         if (registrosZona.length === 0) {
             mostrarModalRutaAlert('warning', '⚠️ ZONA VACÍA', `No hay folios registrados en la ruta <b>${rutaActiva}</b>, zona <b>${zonaActiva}</b>.`, 3000);
             return;
@@ -2278,16 +2280,16 @@
     }
 
     function resolverBultoFaltanteCS(key, retirar) {
-        const registro = scans.find(s => s.key === key);
+        const registro = scansCS().find(s => s.key === key);
         if (!registro || !cierreZonaCSContexto) return;
         const { ruta, zona } = cierreZonaCSContexto;
 
         const finalizarFila = () => {
-            const restantes = scans.filter(s => s.ubic === ruta && s.zona === zona && CATS_PENDIENTES_CS.includes(s.cat) && s.key !== key);
+            const restantes = scansCS().filter(s => s.ubic === ruta && s.zona === zona && CATS_PENDIENTES_CS.includes(s.cat) && s.key !== key);
             renderListaCierreZonaCS(restantes);
             if (restantes.length === 0) {
                 cerrarModalCierreZonaCS();
-                const quedanPendientes = scans.some(s => s.ubic === ruta && s.zona === zona && CATS_PENDIENTES_CS.includes(s.cat));
+                const quedanPendientes = scansCS().some(s => s.ubic === ruta && s.zona === zona && CATS_PENDIENTES_CS.includes(s.cat));
                 if (!quedanPendientes) {
                     marcarZonaCSCerrada(ruta, zona);
                 } else {
