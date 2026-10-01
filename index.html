@@ -907,6 +907,29 @@
     </div>
 </div>
 
+<div id="modalLiquidacionRF" class="modal modal-blur" style="z-index: 9000;">
+    <div class="modal-content" style="max-width: 360px;">
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 24px;">💸</span>
+            <div>
+                <h4 style="color:var(--warning); font-weight:900;">LIQUIDACIÓN DETECTADA</h4>
+                <p id="lblLiqRFInfo" style="font-size: 11px; color: var(--text-muted);"></p>
+            </div>
+        </div>
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; margin-bottom: 10px; text-align:center;">
+            <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📦 Seguimiento</div>
+            <div id="lblLiqRFGuia" style="font-size:16px; font-weight:900; color:var(--text-main);"></div>
+        </div>
+        <p style="font-size:11px; font-weight:800; margin-bottom:8px; text-align:center;">¿Cómo quieres guardar este folio?</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button onclick="resolverLiquidacionRF('RET')" style="padding:12px; border:none; border-radius:8px; background:var(--primary); color:#fff; font-weight:900; font-size:13px; cursor:pointer;">RET adelante<br><span id="lblLiqRFRet" style="font-size:11px; font-weight:700; opacity:0.9;"></span></button>
+            <button onclick="resolverLiquidacionRF('DEV')" style="padding:12px; border:none; border-radius:8px; background:var(--warning); color:#fff; font-weight:900; font-size:13px; cursor:pointer;">DEV al final<br><span id="lblLiqRFDev" style="font-size:11px; font-weight:700; opacity:0.9;"></span></button>
+            <button onclick="resolverLiquidacionRF('')" style="padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text-main); font-weight:800; font-size:12px; cursor:pointer;">Guardar sin marca</button>
+            <button onclick="resolverLiquidacionRF('CANCELAR')" style="padding:8px; border:none; background:transparent; color:var(--danger); font-weight:800; font-size:11px; cursor:pointer;">Cancelar (no registrar)</button>
+        </div>
+    </div>
+</div>
+
 <div id="modalDup" class="modal modal-blur">
     <div class="modal-content" style="max-width: 360px;">
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
@@ -3747,10 +3770,85 @@
 
     document.getElementById('inpScan').onkeypress = (e) => { if (e.key === 'Enter') procesarEscaneo(); };
 
+    // ======================================
+    // LIQUIDACIÓN EN ESCANEO GENERAL
+    // Si el seguimiento está en la Base de Ruta y su carga fue en una jornada
+    // anterior a la actual (el folio salió a ruta y regresó), se pregunta si
+    // se guarda con "RET" adelante o con "DEV" al final. El registro conserva
+    // el código original en guiaOriginal para que REVERSA siga reconociéndolo.
+    // ======================================
+    let liqPendienteRF = null;
+
+    function fechaJornadaRF(d) {
+        const j = obtenerJornadaLogica(d).split('_')[0];
+        const p = j.split('/').map(Number);
+        return { txt: j, dia: Math.round(Date.UTC(p[2], p[1] - 1, p[0]) / 86400000) };
+    }
+
+    function obtenerLiquidacionRF(guia) {
+        try {
+            const cargas = (baseDatosRutaNube || []).filter(r => r && r.seguimiento === guia && r._loteFecha);
+            if (!cargas.length) return null;
+            const jHoy = fechaJornadaRF(new Date());
+            let mejor = null, mejorJ = null;
+            cargas.forEach(r => {
+                const jc = fechaJornadaRF(new Date(r._loteFecha));
+                if (jHoy.dia - jc.dia >= 1 && (!mejor || r._loteFecha > mejor._loteFecha)) { mejor = r; mejorJ = jc; }
+            });
+            if (!mejor) return null;
+            return { carga: mejorJ.txt, dias: jHoy.dia - mejorJ.dia, ruta: mejor.ruta || '-' };
+        } catch (e) { return null; }
+    }
+
+    function abrirModalLiquidacionRF(guia, datos, onGuardado, liq) {
+        liqPendienteRF = { guia, datos, onGuardado };
+        document.getElementById('lblLiqRFGuia').textContent = guia;
+        document.getElementById('lblLiqRFRet').textContent = 'RET' + guia;
+        document.getElementById('lblLiqRFDev').textContent = guia + 'DEV';
+        document.getElementById('lblLiqRFInfo').textContent = `Cargado en Base Ruta el ${liq.carga} (hace ${liq.dias} día${liq.dias > 1 ? 's' : ''}) · Ruta ${liq.ruta}`;
+        document.getElementById('modalLiquidacionRF').style.display = 'flex';
+        playBeep(300);
+        document.getElementById('inpScan').value = '';
+    }
+
+    function resolverLiquidacionRF(marca) {
+        const p = liqPendienteRF;
+        liqPendienteRF = null;
+        document.getElementById('modalLiquidacionRF').style.display = 'none';
+        if (!p) return;
+        if (marca === 'CANCELAR') { document.getElementById('inpScan').focus(); return; }
+        guardarRegistroGeneralRF(p.guia, p.datos, marca, p.onGuardado);
+    }
+
+    function guardarRegistroGeneralRF(guia, d, marca, onGuardado) {
+        const guiaFinal = marca === 'RET' ? 'RET' + guia : (marca === 'DEV' ? guia + 'DEV' : guia);
+        const nuevo = {
+            guia: guiaFinal,
+            dia: d.info.dia || "SIN PROG.",
+            ruta: d.info.ruta || "SIN PROG.",
+            sec: d.info.sec || "S/S",
+            bul: d.bul,
+            ubic: d.ubic,
+            zona: d.zona,
+            cat: d.cat,
+            hora: obtenerFechaYHoraActual(),
+            forzado: d.forzado,
+            usuario: usuarioActivo
+        };
+        if (marca) { nuevo.guiaOriginal = guia; nuevo.marca = marca; }
+
+        rtdb.ref("escaneos_compartidos").push(nuevo).then(() => {
+            playBeep(800);
+            if (onGuardado) { onGuardado(nuevo); } else { showToast(); }
+            document.getElementById('inpScan').value = "";
+            document.getElementById('inpScan').focus();
+        });
+    }
+
     function intentarRegistrar(guia, info, overrides = null, onGuardado = null) {
         const jornadaActual = obtenerJornadaLogica(new Date());
 
-        const existenteReal = scans.find(s => s.guia === guia && !(s.cat && s.cat.startsWith("IMPRESO")) && s.hora && obtenerJornadaLogica(parsearHoraAObj(s.hora)) === jornadaActual);
+        const existenteReal = scans.find(s => (s.guia === guia || s.guiaOriginal === guia) && !(s.cat && s.cat.startsWith("IMPRESO")) && s.hora && obtenerJornadaLogica(parsearHoraAObj(s.hora)) === jornadaActual);
         
         let finalUbic = document.getElementById('inpUbic').value.toUpperCase() || "-";
         let finalZona = document.getElementById('inpZona').value.toUpperCase() || "-";
@@ -3766,26 +3864,20 @@
             abrirModalDup(existenteReal, info);
             playBeep(200);
         } else {
-            const nuevo = {
-                guia: guia,
-                dia: info.dia || "SIN PROG.",
-                ruta: info.ruta || "SIN PROG.",
-                sec: info.sec || "S/S",
+            const datos = {
+                info: info,
                 bul: parseInt(document.getElementById('inpBultos').value) || 1,
-                ubic: finalUbic,      
-                zona: finalZona,      
-                cat: finalCat,        
-                hora: obtenerFechaYHoraActual(),
-                forzado: document.getElementById('chkModoForzar').checked,
-                usuario: usuarioActivo
+                ubic: finalUbic,
+                zona: finalZona,
+                cat: finalCat,
+                forzado: document.getElementById('chkModoForzar').checked
             };
-
-            rtdb.ref("escaneos_compartidos").push(nuevo).then(() => {
-                playBeep(800);
-                if (onGuardado) { onGuardado(nuevo); } else { showToast(); }
-                document.getElementById('inpScan').value = "";
-                document.getElementById('inpScan').focus();
-            });
+            const liq = obtenerLiquidacionRF(guia);
+            if (liq) {
+                abrirModalLiquidacionRF(guia, datos, onGuardado, liq);
+            } else {
+                guardarRegistroGeneralRF(guia, datos, '', onGuardado);
+            }
         }
     }
 
