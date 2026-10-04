@@ -712,6 +712,14 @@
             </label>
 
             <label class="menu-toggle-row">
+                <span class="mtr-label"><span class="mtr-icon">🔎</span>Reconocer liquidación</span>
+                <span class="side-switch">
+                    <input type="checkbox" id="chkReconocer" checked onchange="toggleReconocer()">
+                    <span class="slider"></span>
+                </span>
+            </label>
+
+            <label class="menu-toggle-row">
                 <span class="mtr-label"><span class="mtr-icon">👁️</span>Ocultar últimos PL</span>
                 <span class="side-switch">
                     <input type="checkbox" id="chkOcultarUltimosPL" onchange="toggleOcultarUltimosPL()">
@@ -2624,12 +2632,18 @@
     }
 
     function actualizarUIRutaLocal() {
-        const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim(); 
-        const registrosEnRuta = baseDatosRutaNube.filter(b => b.ruta === rutaActiva);
-        const totalEnBaseRuta = registrosEnRuta.length;
-        
-        const escEnRuta = scans.filter(e => e.ubic === rutaActiva && !(e.cat && e.cat.startsWith("IMPRESO")));
-        const totalEscaneadosUnicos = escEnRuta.length;
+        const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim();
+        const enRuta = new Set();
+        if (rutaActiva) baseVigenteRF().forEach((b, g) => { if (normRutaRF(b.ruta) === rutaActiva) enRuta.add(g); });
+        const hoy = obtenerJornadaLogica(new Date()).split('_')[0];
+        const escan = new Set();
+        scans.forEach(e => {
+            if (e.modo !== 'VALIDAR_RUTA' || normRutaRF(e.ubic) !== rutaActiva || !e.hora) return;
+            const g = e.guiaOriginal || e.guia;
+            if (enRuta.has(g) && obtenerJornadaLogica(parsearHoraAObj(e.hora)).split('_')[0] === hoy) escan.add(g);
+        });
+        const totalEnBaseRuta = enRuta.size;
+        const totalEscaneadosUnicos = escan.size;
 
         document.getElementById('cantSubida').textContent = totalEnBaseRuta;
         document.getElementById('cantFaltante').textContent = totalEnBaseRuta - totalEscaneadosUnicos;
@@ -3038,7 +3052,7 @@
             return;
         }
 
-        if (coincidenciaLocal && coincidenciaLocal.ruta !== rutaActualTarget && !forzarActivo) {
+        if (coincidenciaLocal && normRutaRF(coincidenciaLocal.ruta) !== rutaActualTarget && !forzarActivo) {
             let detalleHtml = `
                 El folio ingresado no pertenece a la ruta activa.
                 <div class="alert-details">
@@ -3084,7 +3098,7 @@
             zonaEsperada: zonaEsperada || null,
             cat: document.getElementById('inpCat').value.toUpperCase() || "-",
             hora: obtenerFechaYHoraActual(),
-            forzado: forzarActivo || (!coincidenciaLocal) || (coincidenciaLocal.ruta !== rutaActualTarget) || (hayZonaEsperadaValida && zonaEsperada !== String(zonaActivaTarget).toUpperCase()),
+            forzado: forzarActivo || (!coincidenciaLocal) || (normRutaRF(coincidenciaLocal.ruta) !== rutaActualTarget) || (hayZonaEsperadaValida && zonaEsperada !== String(zonaActivaTarget).toUpperCase()),
             usuario: usuarioActivo,
             modo: "VALIDAR_RUTA"
         };
@@ -3122,7 +3136,7 @@
         document.getElementById('dispLast').textContent = val;
 
         // --- ALERTAS ESPECIALES (DOFFA / CUSTODIA SELLER / POR DEVOLVER BU) ---
-        const casoEspecial = detectarCasoEspecialGuia(encontrado);
+        const casoEspecial = reconocimientoActivo ? detectarCasoEspecialGuia(encontrado) : null;
 
         if (casoEspecial === 'DOFFA') {
             pendingDoffaGuia = val;
@@ -3289,7 +3303,7 @@
                 }
             }
 
-            const idxDup = scans.findIndex(e => e.guia === val && !(e.cat && e.cat.startsWith("IMPRESO")) && e.hora && obtenerJornadaLogica(parsearHoraAObj(e.hora)) === jornadaActual);
+            const idxDup = scans.findIndex(e => (e.guia === val || e.guiaOriginal === val) && !(e.cat && e.cat.startsWith("IMPRESO")) && e.hora && obtenerJornadaLogica(parsearHoraAObj(e.hora)) === jornadaActual);
             
             if(idxDup !== -1) {
                 inp.value = '';
@@ -3297,7 +3311,7 @@
                 return;
             }
 
-            const coincidenciasLocal = baseDatosRutaNube.filter(b => b.seguimiento === val);
+            const coincidenciasLocal = coincidenciasVigentesRF(val, rutaActualTarget);
 
             if (coincidenciasLocal.length > 1) {
                 inp.value = '';
@@ -3379,7 +3393,7 @@
             sec: encontrado ? buscarColumna(encontrado, ["SECUENCIA", "SEC"]) : null
         };
 
-        const casoEspecial = detectarCasoEspecialGuia(encontrado);
+        const casoEspecial = reconocimientoActivo ? detectarCasoEspecialGuia(encontrado) : null;
 
         if (casoEspecial) {
             actualizarDispRutaUI(info);
@@ -3785,15 +3799,58 @@
         return { txt: j, dia: Math.round(Date.UTC(p[2], p[1] - 1, p[0]) / 86400000) };
     }
 
-    function obtenerLiquidacionRF(guia) {
+    let reconocimientoActivo = true;
+    function toggleReconocer() {
+        reconocimientoActivo = document.getElementById('chkReconocer').checked;
+        try { localStorage.setItem('reconocerAuto', reconocimientoActivo ? '1' : '0'); } catch (e) {}
+        document.getElementById('inpScan').focus();
+    }
+    (function () {
         try {
-            const cargas = (baseDatosRutaNube || []).filter(r => r && r.seguimiento === guia && r._loteFecha);
+            if (localStorage.getItem('reconocerAuto') === '0') {
+                reconocimientoActivo = false;
+                document.getElementById('chkReconocer').checked = false;
+            }
+        } catch (e) {}
+    })();
+
+    function normRutaRF(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+    function fechaLoteRF(r) {
+        const t = new Date(r._loteFecha || r.loteFecha || r.fechaCarga || 0).getTime();
+        return isNaN(t) ? 0 : t;
+    }
+    // Última carga de Base Ruta por seguimiento (la Base conserva varias cargas de la misma guía).
+    function baseVigenteRF() {
+        const m = new Map();
+        baseDatosRutaNube.forEach(b => {
+            if (b.seguimiento == null) return;
+            const p = m.get(b.seguimiento);
+            if (!p || fechaLoteRF(b) >= fechaLoteRF(p)) m.set(b.seguimiento, b);
+        });
+        return m;
+    }
+    // Evita el modal de "elegir ruta" cuando la guía tiene varias cargas: toma la más reciente
+    // (o la que coincide con la ruta activa si hay empate).
+    function coincidenciasVigentesRF(guia, rutaActiva) {
+        const c = baseDatosRutaNube.filter(b => b.seguimiento === guia);
+        if (c.length < 2) return c;
+        const max = Math.max(...c.map(fechaLoteRF));
+        const top = c.filter(b => fechaLoteRF(b) === max);
+        const igual = top.filter(b => normRutaRF(b.ruta) === rutaActiva);
+        if (igual.length) return [igual[0]];
+        return new Set(top.map(b => normRutaRF(b.ruta))).size === 1 ? [top[0]] : top;
+    }
+
+    function obtenerLiquidacionRF(guia) {
+        if (!reconocimientoActivo) return null;
+        try {
+            const cargas = (baseDatosRutaNube || []).filter(r => r && r.seguimiento === guia && fechaLoteRF(r));
             if (!cargas.length) return null;
             const jHoy = fechaJornadaRF(new Date());
             let mejor = null, mejorJ = null;
             cargas.forEach(r => {
-                const jc = fechaJornadaRF(new Date(r._loteFecha));
-                if (jHoy.dia - jc.dia >= 1 && (!mejor || r._loteFecha > mejor._loteFecha)) { mejor = r; mejorJ = jc; }
+                const jc = fechaJornadaRF(new Date(fechaLoteRF(r)));
+                if (jHoy.dia - jc.dia >= 1 && (!mejor || fechaLoteRF(r) > fechaLoteRF(mejor))) { mejor = r; mejorJ = jc; }
             });
             if (!mejor) return null;
             return { carga: mejorJ.txt, dias: jHoy.dia - mejorJ.dia, ruta: mejor.ruta || '-' };
