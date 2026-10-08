@@ -764,7 +764,6 @@
         <div class="stat-card-mini route-accent mod-ruta-item" style="display: none;"><div class="stat-label-mini">Faltantes</div><div id="cantFaltante" class="stat-value-mini" style="color:var(--danger)">0</div></div>
         
         <div class="stat-card-mini print-accent mod-print-item" style="display: none; grid-column: span 2;"><div class="stat-label-mini">✨ ETIQUETAS EMITIDAS (SESIÓN)</div><div id="cantEtiquetasOperario" class="stat-value-mini" style="color:var(--print-color)">0</div></div>
-        <button type="button" id="btnImprimirR" class="mod-print-item" onclick="imprimirEtiquetasR()" style="display:none; grid-column: span 2; background:var(--print-color); color:white; border:none; padding:12px; border-radius:10px; font-weight:900; font-size:13px; letter-spacing:.5px;">🖨️ IMPRIMIR "R" ×20</button>
 
         <div class="stat-card-mini" style="grid-column: span 2;"><div class="stat-label-mini">Último Escaneo</div><div id="dispLast" class="stat-value-mini">---</div></div>
     </div>
@@ -863,6 +862,10 @@
                     <input type="number" id="inpLabelWidthMM" placeholder="Ancho" value="50" min="10" onchange="guardarTamanoEtiqueta()" style="width:60px; padding:5px 6px; font-size:11px; border:1px solid var(--border); border-radius:4px; font-weight:700;">
                     <span style="font-size:11px; color:var(--text-muted);">x</span>
                     <input type="number" id="inpLabelHeightMM" placeholder="Alto" value="50" min="10" onchange="guardarTamanoEtiqueta()" style="width:60px; padding:5px 6px; font-size:11px; border:1px solid var(--border); border-radius:4px; font-weight:700;">
+                </div>
+                <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);">
+                    <div style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">🔠 Etiquetas especiales</div>
+                    <button type="button" id="btnImprimirR" onclick="imprimirEtiquetasR()" style="width:100%; background:var(--print-color); color:white; border:none; padding:12px; border-radius:10px; font-weight:900; font-size:13px; letter-spacing:.5px;">🖨️ IMPRIMIR "R" ×20</button>
                 </div>
             </div>
         </div>
