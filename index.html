@@ -688,6 +688,14 @@
             </label>
 
             <label class="menu-toggle-row">
+                <span class="mtr-label"><span class="mtr-icon">🏷️</span>Etiqueta folio</span>
+                <span class="side-switch">
+                    <input type="checkbox" id="chkModoEtiquetaFolio" onchange="toggleModoEtiquetaFolio(); actualizarPanelUltimosPL();">
+                    <span class="slider"></span>
+                </span>
+            </label>
+
+            <label class="menu-toggle-row">
                 <span class="mtr-label"><span class="mtr-icon">🛡️</span>Validar</span>
                 <span class="side-switch">
                     <input type="checkbox" id="chkControlSeguridad" onchange="toggleControlSeguridad(); actualizarPanelUltimosPL();">
@@ -1099,6 +1107,21 @@
     </div>
 </div>
 
+<div id="modalEtiquetaFolio" class="modal modal-blur" style="z-index: 6050;">
+    <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--print-color);">
+        <div style="font-size: 30px; margin-bottom: 8px;">🏷️</div>
+        <h4 style="color:var(--print-color); font-weight:900; margin-bottom: 4px;">ETIQUETA DE FOLIO</h4>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Folio escaneado:</p>
+        <p id="txtEtiquetaFolio" style="font-size: 16px; font-weight: 900; color: var(--text-main); word-break: break-all; margin-bottom: 14px;"></p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button onclick="elegirSufijoEtiquetaFolio('RET')" style="background:#f59e0b; color:white; border:none; padding:14px; border-radius:10px; font-weight:900; font-size:15px;">➕ RET AL INICIO</button>
+            <button onclick="elegirSufijoEtiquetaFolio('DEV')" style="background:#8b5cf6; color:white; border:none; padding:14px; border-radius:10px; font-weight:900; font-size:15px;">➕ DEV AL FINAL</button>
+            <button onclick="elegirSufijoEtiquetaFolio('')" style="background:var(--print-color); color:white; border:none; padding:14px; border-radius:10px; font-weight:900; font-size:15px;">🖨️ IMPRIMIR SIN NADA</button>
+            <button onclick="cerrarModalEtiquetaFolio()" style="background:var(--bg); color:var(--text-main); border:1px solid var(--border); padding:10px; border-radius:10px; font-weight:800;">CANCELAR</button>
+        </div>
+    </div>
+</div>
+
 <div id="modalSinProg" class="modal modal-blur" style="z-index: 6000;">
     <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--warning);">
         <div style="font-size: 30px; margin-bottom: 10px;">⚠️</div>
@@ -1232,6 +1255,8 @@
 
     let modoValidarRutaActivo = false;
     let modoImpresionActivo = false; 
+    let modoEtiquetaFolioActivo = false; // Modo "Etiqueta folio": escanea folio -> RET / DEV / nada -> imprime código de barras + folio
+    let folioEtiquetaPendiente = null;
     let modoControlSeguridadActivo = false;
     // Modo "Escaneos CD VES": reutiliza por completo el motor de Modo Ruta,
     // fijando automáticamente Ubicación = RUTA_FIJA_CDVES ("1001") y
@@ -1709,6 +1734,7 @@
         if (modoValidarRutaActivo && !procesandoExclusividad) {
             procesandoExclusividad = true;
             if(document.getElementById('chkModoImprimir').checked) { document.getElementById('chkModoImprimir').checked = false; toggleModoImprimirLocal(); }
+            if(document.getElementById('chkModoEtiquetaFolio').checked) { document.getElementById('chkModoEtiquetaFolio').checked = false; toggleModoEtiquetaFolio(); }
             if(document.getElementById('chkControlSeguridad').checked) { document.getElementById('chkControlSeguridad').checked = false; toggleControlSeguridad(); }
             if(document.getElementById('chkEscaneoAgil').checked) { document.getElementById('chkEscaneoAgil').checked = false; toggleEscaneoAgil(); }
             procesandoExclusividad = false;
@@ -1787,6 +1813,7 @@
         if (modoCDVESActivo && !procesandoExclusividad) {
             procesandoExclusividad = true;
             if(document.getElementById('chkModoImprimir').checked) { document.getElementById('chkModoImprimir').checked = false; toggleModoImprimirLocal(); }
+            if(document.getElementById('chkModoEtiquetaFolio').checked) { document.getElementById('chkModoEtiquetaFolio').checked = false; toggleModoEtiquetaFolio(); }
             if(document.getElementById('chkControlSeguridad').checked) { document.getElementById('chkControlSeguridad').checked = false; toggleControlSeguridad(); }
             if(document.getElementById('chkEscaneoAgil').checked) { document.getElementById('chkEscaneoAgil').checked = false; toggleEscaneoAgil(); }
             procesandoExclusividad = false;
@@ -1846,6 +1873,7 @@
             if(document.getElementById('chkModoValidarRuta').checked) { document.getElementById('chkModoValidarRuta').checked = false; toggleModoValidarRuta(); }
             if(document.getElementById('chkControlSeguridad').checked) { document.getElementById('chkControlSeguridad').checked = false; toggleControlSeguridad(); }
             if(document.getElementById('chkEscaneoAgil').checked) { document.getElementById('chkEscaneoAgil').checked = false; toggleEscaneoAgil(); }
+            if(document.getElementById('chkModoEtiquetaFolio').checked) { document.getElementById('chkModoEtiquetaFolio').checked = false; toggleModoEtiquetaFolio(); }
             procesandoExclusividad = false;
         }
 
@@ -1886,6 +1914,7 @@
             procesandoExclusividad = true;
             if(document.getElementById('chkModoValidarRuta').checked) { document.getElementById('chkModoValidarRuta').checked = false; toggleModoValidarRuta(); }
             if(document.getElementById('chkModoImprimir').checked) { document.getElementById('chkModoImprimir').checked = false; toggleModoImprimirLocal(); }
+            if(document.getElementById('chkModoEtiquetaFolio').checked) { document.getElementById('chkModoEtiquetaFolio').checked = false; toggleModoEtiquetaFolio(); }
             if(document.getElementById('chkEscaneoAgil').checked) { document.getElementById('chkEscaneoAgil').checked = false; toggleEscaneoAgil(); }
             procesandoExclusividad = false;
         }
@@ -1922,6 +1951,7 @@
             procesandoExclusividad = true;
             if(document.getElementById('chkModoValidarRuta').checked) { document.getElementById('chkModoValidarRuta').checked = false; toggleModoValidarRuta(); }
             if(document.getElementById('chkModoImprimir').checked) { document.getElementById('chkModoImprimir').checked = false; toggleModoImprimirLocal(); }
+            if(document.getElementById('chkModoEtiquetaFolio').checked) { document.getElementById('chkModoEtiquetaFolio').checked = false; toggleModoEtiquetaFolio(); }
             if(document.getElementById('chkControlSeguridad').checked) { document.getElementById('chkControlSeguridad').checked = false; toggleControlSeguridad(); }
             procesandoExclusividad = false;
         }
@@ -3189,6 +3219,15 @@
         const val = limpiarCodigo(valOriginal);
         const forzarActivo = document.getElementById('chkModoForzar').checked;
 
+        // MODO ETIQUETA FOLIO: se pregunta RET / DEV / nada y se imprime.
+        // Si ya hay un folio esperando respuesta, se ignora el nuevo escaneo.
+        if (modoEtiquetaFolioActivo) {
+            inp.value = '';
+            if (folioEtiquetaPendiente) { playBeep(200); return; }
+            abrirModalEtiquetaFolio(val);
+            return;
+        }
+
         if (modoControlSeguridadActivo) {
             procesarEscaneoControlSeguridad(val);
             return;
@@ -3733,11 +3772,129 @@
         }, 500);
     }
 
+    // ======================================
+    // MODO ETIQUETA FOLIO
+    // Escaneas el folio -> pregunta si agregar RET, DEV o nada -> imprime
+    // la etiqueta con el CÓDIGO DE BARRAS (Code 128) y el folio debajo.
+    // ======================================
+    function toggleModoEtiquetaFolio() {
+        modoEtiquetaFolioActivo = document.getElementById('chkModoEtiquetaFolio').checked;
+
+        if (modoEtiquetaFolioActivo && !procesandoExclusividad) {
+            procesandoExclusividad = true;
+            if(document.getElementById('chkModoValidarRuta').checked) { document.getElementById('chkModoValidarRuta').checked = false; toggleModoValidarRuta(); }
+            if(document.getElementById('chkModoImprimir').checked) { document.getElementById('chkModoImprimir').checked = false; toggleModoImprimirLocal(); }
+            if(document.getElementById('chkControlSeguridad').checked) { document.getElementById('chkControlSeguridad').checked = false; toggleControlSeguridad(); }
+            if(document.getElementById('chkEscaneoAgil').checked) { document.getElementById('chkEscaneoAgil').checked = false; toggleEscaneoAgil(); }
+            procesandoExclusividad = false;
+        }
+
+        const inp = document.getElementById('inpScan');
+        if (modoEtiquetaFolioActivo) {
+            inp.placeholder = "🏷️ ESCANEE EL FOLIO PARA ETIQUETA...";
+        } else {
+            folioEtiquetaPendiente = null;
+            document.getElementById('modalEtiquetaFolio').style.display = 'none';
+            if (!procesandoExclusividad) inp.placeholder = "ESCANEÉ AQUÍ...";
+        }
+        inp.value = '';
+        inp.focus();
+    }
+
+    function abrirModalEtiquetaFolio(folio) {
+        folioEtiquetaPendiente = folio;
+        document.getElementById('txtEtiquetaFolio').textContent = folio;
+        document.getElementById('modalEtiquetaFolio').style.display = 'flex';
+        playBeep(200);
+    }
+
+    function cerrarModalEtiquetaFolio() {
+        document.getElementById('modalEtiquetaFolio').style.display = 'none';
+        folioEtiquetaPendiente = null;
+        const inp = document.getElementById('inpScan');
+        inp.value = '';
+        inp.focus();
+    }
+
+    function elegirSufijoEtiquetaFolio(sufijo) {
+        const folio = folioEtiquetaPendiente;
+        if (!folio) { cerrarModalEtiquetaFolio(); return; }
+        // RET va ADELANTE del folio; DEV va ATRÁS; sin nada = solo el folio.
+        const texto = sufijo === 'RET' ? 'RET' + folio : (sufijo === 'DEV' ? folio + 'DEV' : folio);
+        document.getElementById('modalEtiquetaFolio').style.display = 'none';
+        folioEtiquetaPendiente = null;
+
+        const zpl = generarZPLEtiquetaFolio(texto);
+        enviarZPLaImpresora(zpl);
+
+        contadorEtiquetasOperarioSesion++;
+        const elCant = document.getElementById('cantEtiquetasOperario');
+        if (elCant) elCant.textContent = contadorEtiquetasOperarioSesion;
+        const elLast = document.getElementById('dispLast');
+        if (elLast) elLast.textContent = texto;
+        showToast();
+
+        setTimeout(() => {
+            const inp = document.getElementById('inpScan');
+            inp.value = '';
+            inp.focus();
+        }, 300);
+    }
+
+    // Estimación (en módulos) del ancho de un Code 128 en modo automático de
+    // Zebra: los tramos de 4+ dígitos van en subset C (2 dígitos por símbolo),
+    // el resto en subset B. 35 módulos = inicio + verificador + paro.
+    function estimarModulosCode128(texto) {
+        const partes = String(texto).match(/\d{4,}|\D|\d{1,3}/g) || [];
+        let simbolos = 0;
+        partes.forEach(p => {
+            if (/^\d{4,}$/.test(p)) simbolos += Math.ceil(p.length / 2) + 1;
+            else simbolos += p.length;
+        });
+        return 35 + 11 * simbolos;
+    }
+
+    // Etiqueta: código de barras Code 128 centrado + folio (texto) debajo.
+    // Usa el mismo tamaño de etiqueta configurado en el panel (ancho x alto).
+    function generarZPLEtiquetaFolio(texto) {
+        const anchoMM = parseFloat(localStorage.getItem('labelWidthMM')) || 50;
+        const altoMM = parseFloat(localStorage.getItem('labelHeightMM')) || 50;
+        const W = mmADots(anchoMM);
+        const H = mmADots(altoMM);
+
+        const margen = Math.max(6, Math.round(Math.min(W, H) * 0.03));
+        const anchoInterior = W - margen * 2;
+
+        const modulos = estimarModulosCode128(texto);
+        // Grosor del módulo: el mayor que quepa (1 a 4 dots) con un 4% de holgura.
+        const w = Math.max(1, Math.min(4, Math.floor(anchoInterior / (modulos * 1.04))));
+        const anchoBarras = Math.min(anchoInterior, modulos * w);
+        const xBarras = margen + Math.max(0, Math.floor((anchoInterior - anchoBarras) / 2));
+
+        const altoBarras = Math.round(H * 0.50);
+        const fTxt = ajustarFuenteAAncho(texto, Math.round(H * 0.14), anchoInterior, 14);
+        const hueco = Math.round(H * 0.05);
+        const bloque = altoBarras + hueco + fTxt;
+        const yBarras = Math.max(margen, Math.round((H - bloque) / 2));
+        const yTexto = yBarras + altoBarras + hueco;
+
+        return `
+^XA
+^CI28
+^PW${W}
+^LL${H}
+^BY${w},3,${altoBarras}
+^FO${xBarras},${yBarras}^BCN,${altoBarras},N,N,N,A^FD${texto}^FS
+^FO${margen},${yTexto}^A0N,${fTxt},${fTxt}^FB${anchoInterior},1,0,C^FD${texto}^FS
+^XZ
+`.trim();
+    }
+
     function validarRastreo(codigoOriginal) {
         const code = limpiarCodigo(codigoOriginal);
         if (!code) return false;
         
-        if (document.getElementById('chkModoForzar').checked || modoValidarRutaActivo || modoImpresionActivo) return true;
+        if (document.getElementById('chkModoForzar').checked || modoValidarRutaActivo || modoImpresionActivo || modoEtiquetaFolioActivo) return true;
         
         if (code.startsWith("PL")) return true;
 
@@ -3973,6 +4130,7 @@
             document.getElementById('chkModoForzar').checked ||
             modoValidarRutaActivo ||
             modoImpresionActivo ||
+            modoEtiquetaFolioActivo ||
             modoControlSeguridadActivo ||
             modoEscaneoAgilActivo ||
             modoCDVESActivo;
