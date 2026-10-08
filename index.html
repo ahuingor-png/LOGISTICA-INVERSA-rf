@@ -3136,7 +3136,7 @@
         document.getElementById('dispLast').textContent = val;
 
         // --- ALERTAS ESPECIALES (DOFFA / CUSTODIA SELLER / POR DEVOLVER BU) ---
-        const casoEspecial = reconocimientoActivo ? detectarCasoEspecialGuia(encontrado) : null;
+        const casoEspecial = detectarCasoEspecialGuia(encontrado);
 
         if (casoEspecial === 'DOFFA') {
             pendingDoffaGuia = val;
@@ -3393,7 +3393,7 @@
             sec: encontrado ? buscarColumna(encontrado, ["SECUENCIA", "SEC"]) : null
         };
 
-        const casoEspecial = reconocimientoActivo ? detectarCasoEspecialGuia(encontrado) : null;
+        const casoEspecial = detectarCasoEspecialGuia(encontrado);
 
         if (casoEspecial) {
             actualizarDispRutaUI(info);
@@ -3841,8 +3841,16 @@
         return new Set(top.map(b => normRutaRF(b.ruta))).size === 1 ? [top[0]] : top;
     }
 
+    // Una guía solo se liquida UNA vez: si ya existe un registro de liquidación
+    // (marca RET/DEV o bandera liquidada), los escaneos posteriores se guardan
+    // como inventario normal y no vuelven a pasar por la liquidación.
+    function yaLiquidadaRF(guia) {
+        return scans.some(s => s && (s.guia === guia || s.guiaOriginal === guia) && (s.liquidada || s.marca));
+    }
+
     function obtenerLiquidacionRF(guia) {
         if (!reconocimientoActivo) return null;
+        if (yaLiquidadaRF(guia)) return null;
         try {
             const cargas = (baseDatosRutaNube || []).filter(r => r && r.seguimiento === guia && fechaLoteRF(r));
             if (!cargas.length) return null;
@@ -3874,10 +3882,10 @@
         document.getElementById('modalLiquidacionRF').style.display = 'none';
         if (!p) return;
         if (marca === 'CANCELAR') { document.getElementById('inpScan').focus(); return; }
-        guardarRegistroGeneralRF(p.guia, p.datos, marca, p.onGuardado);
+        guardarRegistroGeneralRF(p.guia, p.datos, marca, p.onGuardado, true);
     }
 
-    function guardarRegistroGeneralRF(guia, d, marca, onGuardado) {
+    function guardarRegistroGeneralRF(guia, d, marca, onGuardado, liquidada = false) {
         const guiaFinal = marca === 'RET' ? 'RET' + guia : (marca === 'DEV' ? guia + 'DEV' : guia);
         const nuevo = {
             guia: guiaFinal,
@@ -3893,6 +3901,7 @@
             usuario: usuarioActivo
         };
         if (marca) { nuevo.guiaOriginal = guia; nuevo.marca = marca; }
+        if (liquidada) nuevo.liquidada = true;
 
         rtdb.ref("escaneos_compartidos").push(nuevo).then(() => {
             playBeep(800);
