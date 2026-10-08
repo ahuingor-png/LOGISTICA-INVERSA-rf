@@ -764,6 +764,7 @@
         <div class="stat-card-mini route-accent mod-ruta-item" style="display: none;"><div class="stat-label-mini">Faltantes</div><div id="cantFaltante" class="stat-value-mini" style="color:var(--danger)">0</div></div>
         
         <div class="stat-card-mini print-accent mod-print-item" style="display: none; grid-column: span 2;"><div class="stat-label-mini">✨ ETIQUETAS EMITIDAS (SESIÓN)</div><div id="cantEtiquetasOperario" class="stat-value-mini" style="color:var(--print-color)">0</div></div>
+        <button type="button" id="btnImprimirR" class="mod-print-item" onclick="imprimirEtiquetasR()" style="display:none; grid-column: span 2; background:var(--print-color); color:white; border:none; padding:12px; border-radius:10px; font-weight:900; font-size:13px; letter-spacing:.5px;">🖨️ IMPRIMIR "R" ×20</button>
 
         <div class="stat-card-mini" style="grid-column: span 2;"><div class="stat-label-mini">Último Escaneo</div><div id="dispLast" class="stat-value-mini">---</div></div>
     </div>
@@ -2539,6 +2540,13 @@
             actualizarUIRutaLocal();
         });
 
+        // Guías ya liquidadas y conservadas aunque se haya borrado el historial
+        rtdb.ref("liquidaciones_registro").on("value", (snap) => {
+            const n = new Set();
+            snap.forEach(c => { const v = c.val(); if (v && v.guia != null) n.add(String(v.guia)); });
+            liqPersistidasRF = n;
+        });
+
         rtdb.ref("escaneos_compartidos").on("value", (snapshot) => {
             // Antes se usaba scans.unshift(node) dentro del forEach, lo cual es
             // O(n) por cada inserción (recorre todo el arreglo) y por lo tanto
@@ -3890,6 +3898,46 @@
 `.trim();
     }
 
+    // Etiqueta "R": solo la letra R grande y centrada. Cada pulsación manda UN
+    // trabajo con ^PQ para que la impresora saque las 20 etiquetas seguidas.
+    const COPIAS_ETIQUETA_R = 20;
+    function generarZPLEtiquetaR(copias) {
+        const anchoMM = parseFloat(localStorage.getItem('labelWidthMM')) || 50;
+        const altoMM = parseFloat(localStorage.getItem('labelHeightMM')) || 50;
+        const W = mmADots(anchoMM);
+        const H = mmADots(altoMM);
+        const f = Math.max(30, Math.round(Math.min(H * 0.8, W * 1.1)));
+        const y = Math.max(0, Math.round((H - f) / 2));
+        return `
+^XA
+^CI28
+^PW${W}
+^LL${H}
+^FO0,${y}^A0N,${f},${f}^FB${W},1,0,C^FDR^FS
+^PQ${copias},0,1,N
+^XZ
+`.trim();
+    }
+
+    let imprimiendoR = false;
+    async function imprimirEtiquetasR() {
+        if (imprimiendoR) return;
+        imprimiendoR = true;
+        const btn = document.getElementById('btnImprimirR');
+        if (btn) btn.style.opacity = '0.6';
+        try {
+            const ok = await enviarZPLaImpresora(generarZPLEtiquetaR(COPIAS_ETIQUETA_R));
+            if (ok) {
+                contadorEtiquetasOperarioSesion += COPIAS_ETIQUETA_R;
+                const elCant = document.getElementById('cantEtiquetasOperario');
+                if (elCant) elCant.textContent = contadorEtiquetasOperarioSesion;
+                showToast();
+            }
+        } finally {
+            setTimeout(() => { imprimiendoR = false; if (btn) btn.style.opacity = '1'; }, 800);
+        }
+    }
+
     function validarRastreo(codigoOriginal) {
         const code = limpiarCodigo(codigoOriginal);
         if (!code) return false;
@@ -4001,7 +4049,9 @@
     // Una guía solo se liquida UNA vez: si ya existe un registro de liquidación
     // (marca RET/DEV o bandera liquidada), los escaneos posteriores se guardan
     // como inventario normal y no vuelven a pasar por la liquidación.
+    let liqPersistidasRF = new Set();
     function yaLiquidadaRF(guia) {
+        if (liqPersistidasRF.has(String(guia))) return true;
         return scans.some(s => s && (s.guia === guia || s.guiaOriginal === guia) && (s.liquidada || s.marca));
     }
 
