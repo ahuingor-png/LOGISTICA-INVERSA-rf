@@ -843,7 +843,7 @@
     </div>
 
     <div id="modalConfigImpresora" class="modal modal-blur">
-        <div class="modal-content" style="max-width:360px;">
+        <div class="modal-content" style="max-width:360px; max-height:92vh; overflow-y:auto;">
             <div class="table-header">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h4 style="font-weight:900; color:var(--print-color);">⚙️ CONFIGURAR IMPRESORA</h4>
@@ -866,6 +866,17 @@
                 <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);">
                     <div style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">🔠 Etiquetas especiales</div>
                     <button type="button" id="btnImprimirR" onclick="imprimirEtiquetasR()" style="width:100%; background:var(--print-color); color:white; border:none; padding:12px; border-radius:10px; font-weight:900; font-size:13px; letter-spacing:.5px;">🖨️ IMPRIMIR "R" ×20</button>
+                    <div style="margin-top:10px; padding:8px; background:rgba(236,72,153,0.05); border:1px dashed var(--print-color); border-radius:8px;">
+                        <div style="font-size:10px; font-weight:800; color:var(--print-color); margin-bottom:6px;">🔳 QR CORRELATIVO TRF</div>
+                        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                            <label style="font-size:10px; font-weight:800; color:var(--text-muted);">DESDE</label>
+                            <input type="number" id="inpTRFDesde" value="1" min="1" inputmode="numeric" style="width:70px; padding:6px; font-size:13px; font-weight:800; border:1px solid var(--border); border-radius:4px; text-align:center;">
+                            <label style="font-size:10px; font-weight:800; color:var(--text-muted);">HASTA</label>
+                            <input type="number" id="inpTRFHasta" placeholder="Ej: 50" min="1" inputmode="numeric" style="width:70px; padding:6px; font-size:13px; font-weight:800; border:1px solid var(--border); border-radius:4px; text-align:center;">
+                        </div>
+                        <div id="txtTRFResumen" style="font-size:10px; color:var(--text-muted); margin-bottom:6px;">Ej: TRF01, TRF02 ... TRF50</div>
+                        <button type="button" id="btnImprimirTRF" onclick="imprimirEtiquetasTRF()" style="width:100%; background:var(--print-color); color:white; border:none; padding:12px; border-radius:10px; font-weight:900; font-size:13px; letter-spacing:.5px;">🖨️ IMPRIMIR QR TRF</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3721,7 +3732,21 @@
         // Magnificación del QR: se conserva el mismo cálculo de siempre
         // (relativo al ancho de columna derecha y ~30% del alto), así el
         // QR no cambia de tamaño aunque el resto de las letras haya crecido.
-        const magQR = Math.min(10, Math.max(1, Math.round(Math.min(colDerW, H * 0.30) / 30)));
+        const magQRBase = Math.min(10, Math.max(1, Math.round(Math.min(colDerW, H * 0.30) / 30)));
+        // QR un poco más grande: se estima cuántos módulos tendrá el QR según el
+        // largo del tracking (nivel Q; solo dígitos o modo byte para ser
+        // conservador) y se sube la magnificación hasta donde quepa en la
+        // columna derecha y sin pisar la fila de fecha/hora. Nunca queda más
+        // chico que antes y crece máximo 2 pasos sobre el tamaño original.
+        const largoQR = String(seguimiento).length;
+        const soloDigitos = /^\d+$/.test(String(seguimiento));
+        const capQ = soloDigitos ? [27, 48, 77, 111, 144, 178] : [11, 20, 32, 46, 60, 74];
+        let versionQR = capQ.findIndex(c => largoQR <= c) + 1;
+        if (versionQR <= 0) versionQR = 7;
+        const modulosQR = 17 + 4 * versionQR;
+        const altoDisponibleQR = yFechaHora - yQR - Math.round(margen * 0.4);
+        const magQRFit = Math.floor(Math.min(colDerW, altoDisponibleQR) / modulosQR);
+        const magQR = Math.min(10, Math.max(magQRBase, Math.min(magQRFit, magQRBase + 2)));
 
         // ^FB (Field Block) fuerza a que el texto quepa en el ancho indicado (1 línea,
         // recortando en vez de desbordarse) como red de seguridad extra, aunque el
@@ -3938,6 +3963,99 @@
             }
         } finally {
             setTimeout(() => { imprimiendoR = false; if (btn) btn.style.opacity = '1'; }, 800);
+        }
+    }
+
+    // ======================================
+    // ETIQUETAS QR CORRELATIVAS "TRF"
+    // Imprime TRF01, TRF02 ... hasta el número que se indique, cada una como
+    // QR con el texto debajo. Los números se rellenan con ceros (mínimo 2
+    // dígitos, o los que tenga el número final: TRF001 si llegas a 100+).
+    // ======================================
+    function codigoTRF(n, digitos) {
+        return 'TRF' + String(n).padStart(digitos, '0');
+    }
+
+    function generarZPLEtiquetaTRF(texto) {
+        const anchoMM = parseFloat(localStorage.getItem('labelWidthMM')) || 50;
+        const altoMM = parseFloat(localStorage.getItem('labelHeightMM')) || 50;
+        const W = mmADots(anchoMM);
+        const H = mmADots(altoMM);
+
+        const margen = Math.max(6, Math.round(Math.min(W, H) * 0.03));
+        const anchoInterior = W - margen * 2;
+
+        // QR versión 1-2 (21 a 25 módulos). Se usa 25 para que siempre quepa.
+        const ladoMax = Math.min(anchoInterior, H * 0.62);
+        const mag = Math.min(10, Math.max(1, Math.floor(ladoMax / 25)));
+        const ladoQR = 25 * mag;
+        const fTxt = ajustarFuenteAAncho(texto, Math.round(H * 0.16), anchoInterior, 16);
+        const hueco = Math.round(H * 0.04);
+        const bloque = ladoQR + hueco + fTxt;
+        const yQR = Math.max(margen, Math.round((H - bloque) / 2));
+        const xQR = Math.max(margen, Math.round((W - ladoQR) / 2));
+        const yTexto = yQR + ladoQR + hueco;
+
+        return `^XA
+^CI28
+^PW${W}
+^LL${H}
+^FO${xQR},${yQR}^BQN,2,${mag}^FDQA,${texto}^FS
+^FO${margen},${yTexto}^A0N,${fTxt},${fTxt}^FB${anchoInterior},1,0,C^FD${texto}^FS
+^PQ1,0,1,N
+^XZ`;
+    }
+
+    function actualizarResumenTRF() {
+        const desde = parseInt(document.getElementById('inpTRFDesde').value, 10);
+        const hasta = parseInt(document.getElementById('inpTRFHasta').value, 10);
+        const el = document.getElementById('txtTRFResumen');
+        if (!desde || !hasta || hasta < desde) { el.textContent = 'Ej: TRF01, TRF02 ... TRF50'; return; }
+        const dig = Math.max(2, String(hasta).length);
+        el.textContent = `${codigoTRF(desde, dig)} → ${codigoTRF(hasta, dig)}  (${hasta - desde + 1} etiquetas)`;
+    }
+    document.getElementById('inpTRFDesde').addEventListener('input', actualizarResumenTRF);
+    document.getElementById('inpTRFHasta').addEventListener('input', actualizarResumenTRF);
+
+    let imprimiendoTRF = false;
+    async function imprimirEtiquetasTRF() {
+        if (imprimiendoTRF) return;
+        const desde = parseInt(document.getElementById('inpTRFDesde').value, 10) || 1;
+        const hasta = parseInt(document.getElementById('inpTRFHasta').value, 10);
+        if (!hasta || hasta < 1) { alert('⚠️ Escribe hasta qué número quieres imprimir (campo HASTA).'); return; }
+        if (hasta < desde) { alert('⚠️ El número HASTA debe ser mayor o igual que DESDE.'); return; }
+
+        const total = hasta - desde + 1;
+        const dig = Math.max(2, String(hasta).length);
+        if (total > 100 && !confirm(`Se van a imprimir ${total} etiquetas (${codigoTRF(desde, dig)} a ${codigoTRF(hasta, dig)}). ¿Continuar?`)) return;
+
+        imprimiendoTRF = true;
+        const btn = document.getElementById('btnImprimirTRF');
+        const textoOriginal = btn.textContent;
+        btn.style.opacity = '0.6';
+        try {
+            // Se envía en bloques de 25 etiquetas para no saturar el mini servidor de la impresora.
+            const BLOQUE = 25;
+            let impresas = 0;
+            for (let ini = desde; ini <= hasta; ini += BLOQUE) {
+                const fin = Math.min(hasta, ini + BLOQUE - 1);
+                const zpls = [];
+                for (let n = ini; n <= fin; n++) zpls.push(generarZPLEtiquetaTRF(codigoTRF(n, dig)));
+                const ok = await enviarZPLaImpresora(zpls.join('\n'));
+                if (!ok) break;
+                impresas += (fin - ini + 1);
+                btn.textContent = `🖨️ ENVIADAS ${impresas}/${total}...`;
+                if (fin < hasta) await new Promise(r => setTimeout(r, 1500));
+            }
+            if (impresas > 0) {
+                contadorEtiquetasOperarioSesion += impresas;
+                const elCant = document.getElementById('cantEtiquetasOperario');
+                if (elCant) elCant.textContent = contadorEtiquetasOperarioSesion;
+                showToast();
+            }
+        } finally {
+            btn.textContent = textoOriginal;
+            setTimeout(() => { imprimiendoTRF = false; btn.style.opacity = '1'; }, 800);
         }
     }
 
