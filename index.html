@@ -13,6 +13,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -334,6 +335,9 @@
         .modo-btn.picking { border-color:var(--primary); color:var(--primary); }
         .modo-btn.repro { border-color:var(--success); color:var(--success); }
         .btn-toggle-modo { background: var(--header-surface); border:none; color: var(--header-text); padding:5px 8px; border-radius:6px; font-size:10px; font-weight:800; cursor:pointer; }
+
+        .etq-tipo-btn { flex:1; padding:9px 4px; font-size:12px; font-weight:800; border:2px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text-muted); }
+        .etq-tipo-btn.activo { border-color:var(--print-color); background:var(--print-color); color:#fff; }
     </style>
 </head>
 <body>
@@ -741,6 +745,7 @@
 
         <div class="side-menu-section-title">Impresión</div>
         <button class="side-menu-item" onclick="cerrarMenuLateral(); abrirModalConfigImpresora();">⚙️ Configurar Impresora</button>
+        <button class="side-menu-item" onclick="cerrarMenuLateral(); abrirModalEtiquetasLibres();">🔳 Etiquetas QR / Barras</button>
 
         <div class="side-menu-section-title">Administración</div>
         <button class="btn-header btn-admin-panel" id="btnAdminPanel" onclick="cerrarMenuLateral(); abrirModalAdmin();">⚙️ Panel de Control</button>
@@ -890,6 +895,50 @@
         <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 8px; font-style: italic;" id="statsTotalRutaLocal">
             Base de datos en la nube: 0 registros totales
         </div>
+    </div>
+</div>
+
+<!-- MODAL ETIQUETAS LIBRES QR / BARRAS (solo imprime, no registra nada) -->
+<div id="modalEtiquetasLibres" class="modal modal-blur" style="z-index: 6000;">
+    <div class="modal-content" style="max-width:360px; max-height:92vh; overflow-y:auto; border: 3px solid var(--print-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h4 style="font-weight:900; color:var(--print-color);">🔳 ETIQUETAS QR / BARRAS</h4>
+            <button onclick="cerrarModalEtiquetasLibres()" style="background:var(--bg); border:1px solid var(--border); padding:4px 10px; border-radius:4px; font-size:12px; font-weight:700;">&times;</button>
+        </div>
+
+        <label style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Texto / código a imprimir</label>
+        <input type="text" id="inpEtqLibreTexto" placeholder="Ej: A001 o 123456" autocomplete="off" autocapitalize="characters"
+            style="width:100%; padding:10px; margin:4px 0 10px; font-size:15px; font-weight:800; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text);">
+
+        <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Tipo de etiqueta</div>
+        <div style="display:flex; gap:6px; margin-bottom:10px;">
+            <button type="button" class="etq-tipo-btn" data-tipo="qr" onclick="elegirTipoEtqLibre('qr')">🔳 QR</button>
+            <button type="button" class="etq-tipo-btn" data-tipo="barras" onclick="elegirTipoEtqLibre('barras')">▮▯▮ Barras</button>
+            <button type="button" class="etq-tipo-btn" data-tipo="ambos" onclick="elegirTipoEtqLibre('ambos')">Ambos</button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <label style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; white-space:nowrap;">Cantidad</label>
+            <input type="number" id="inpEtqLibreCant" value="1" min="1" max="500" inputmode="numeric"
+                style="width:90px; padding:8px; font-size:15px; font-weight:800; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text);">
+        </div>
+
+        <label style="display:flex; align-items:center; gap:8px; padding:8px; background:rgba(236,72,153,0.05); border:1px dashed var(--print-color); border-radius:8px; margin-bottom:6px; font-size:12px; font-weight:800; color:var(--print-color);">
+            <input type="checkbox" id="chkEtqLibreCorrelativo" style="width:18px; height:18px;"> 🔢 Correlativo
+        </label>
+        <div style="font-size:10px; color:var(--text-muted); margin-bottom:10px;">Suma 1 al número del final, conservando los ceros y las letras (A001 → A002, 123 → 124). Si no termina en número, se lo agrega.</div>
+
+        <div id="txtEtqLibreResumen" style="font-size:11px; font-weight:700; color:var(--text); text-align:center; margin-bottom:8px;">Escribe el texto para ver el resumen.</div>
+
+        <div id="boxPreviewEtqLibre" style="display:none; background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px; margin-bottom:10px; text-align:center; overflow:hidden;">
+            <div style="font-size:9px; font-weight:800; color:#64748b; margin-bottom:4px;">VISTA PREVIA (1ª etiqueta)</div>
+            <canvas id="cnvEtqLibreQR" style="display:none; margin:0 auto; max-width:100%;"></canvas>
+            <svg id="svgEtqLibreBar" style="display:none; margin:2px auto 0; max-width:100%;"></svg>
+            <div id="txtEtqLibrePreview" style="font-size:13px; font-weight:800; color:#0f172a; font-family:monospace; word-break:break-all;"></div>
+        </div>
+
+        <button type="button" id="btnImprimirEtqLibre" onclick="imprimirEtiquetasLibres()" style="width:100%; background:var(--print-color); color:white; border:none; padding:12px; border-radius:10px; font-weight:900; font-size:14px;">🖨️ IMPRIMIR</button>
+        <div style="font-size:9px; color:var(--text-muted); text-align:center; margin-top:6px;">Solo imprime. No se guarda ni se registra en ninguna base.</div>
     </div>
 </div>
 
@@ -4056,6 +4105,188 @@
         } finally {
             btn.textContent = textoOriginal;
             setTimeout(() => { imprimiendoTRF = false; btn.style.opacity = '1'; }, 800);
+        }
+    }
+
+
+    // ======================================
+    // ETIQUETAS LIBRES QR / CÓDIGO DE BARRAS
+    // Imprime lo que se escriba (QR, Code 128 o ambos), con cantidad y
+    // correlativo opcional. SOLO IMPRIME: no escribe en Firebase ni en
+    // ningún contador.
+    // ======================================
+    let tipoEtqLibre = 'qr';
+    let imprimiendoEtqLibre = false;
+
+    function abrirModalEtiquetasLibres() {
+        document.getElementById('modalEtiquetasLibres').style.display = 'flex';
+        elegirTipoEtqLibre(tipoEtqLibre);
+        setTimeout(() => document.getElementById('inpEtqLibreTexto').focus(), 150);
+    }
+    function cerrarModalEtiquetasLibres() {
+        document.getElementById('modalEtiquetasLibres').style.display = 'none';
+    }
+    function elegirTipoEtqLibre(tipo) {
+        tipoEtqLibre = tipo;
+        document.querySelectorAll('.etq-tipo-btn').forEach(b => b.classList.toggle('activo', b.dataset.tipo === tipo));
+        actualizarResumenEtqLibre();
+    }
+
+    // Lista de textos a imprimir. Sin correlativo: el mismo texto repetido.
+    // Con correlativo: se incrementa el número del final (BigInt para que
+    // aguante códigos largos) conservando los ceros a la izquierda.
+    function listaEtiquetasLibres(base, cant, correlativo) {
+        const lista = [];
+        if (!correlativo) { for (let i = 0; i < cant; i++) lista.push(base); return lista; }
+        const m = base.match(/^(.*?)(\d+)$/);
+        let prefijo, inicio, digitos;
+        if (m) { prefijo = m[1]; inicio = BigInt(m[2]); digitos = m[2].length; }
+        else { prefijo = base; inicio = 1n; digitos = Math.max(2, String(cant).length); }
+        for (let i = 0; i < cant; i++) lista.push(prefijo + String(inicio + BigInt(i)).padStart(digitos, '0'));
+        return lista;
+    }
+
+    function leerFormEtqLibre() {
+        const base = document.getElementById('inpEtqLibreTexto').value.trim();
+        const cant = Math.max(1, Math.min(500, parseInt(document.getElementById('inpEtqLibreCant').value, 10) || 1));
+        const correlativo = document.getElementById('chkEtqLibreCorrelativo').checked;
+        return { base, cant, correlativo };
+    }
+
+    // Módulos por lado de un QR (nivel Q) según el contenido, para centrarlo y
+    // dimensionarlo. La impresora elige la versión sola; esto la estima.
+    function modulosQR(texto) {
+        const n = texto.length;
+        let caps;
+        if (/^\d+$/.test(texto)) caps = [27, 48, 77, 111, 144, 178, 207, 259, 312, 364];
+        else if (/^[0-9A-Z $%*+\-.\/:]+$/.test(texto)) caps = [16, 29, 47, 67, 87, 108, 125, 157, 189, 221];
+        else caps = [11, 20, 32, 46, 60, 74, 86, 108, 130, 151];
+        for (let v = 0; v < caps.length; v++) if (n <= caps[v]) return 17 + 4 * (v + 1);
+        return null;
+    }
+
+    function generarZPLEtiquetaLibre(texto, tipo, copias) {
+        const anchoMM = parseFloat(localStorage.getItem('labelWidthMM')) || 50;
+        const altoMM = parseFloat(localStorage.getItem('labelHeightMM')) || 50;
+        const W = mmADots(anchoMM);
+        const H = mmADots(altoMM);
+        const margen = Math.max(6, Math.round(Math.min(W, H) * 0.03));
+        const anchoInterior = W - margen * 2;
+        const conQR = tipo === 'qr' || tipo === 'ambos';
+        const conBarras = tipo === 'barras' || tipo === 'ambos';
+
+        const fTxt = ajustarFuenteAAncho(texto, Math.round(H * (tipo === 'ambos' ? 0.10 : 0.14)), anchoInterior, 12);
+        const hueco = Math.round(H * 0.03);
+
+        let mag = 1, ladoQR = 0, wBar = 1, anchoBarras = 0, altoBarras = 0;
+        if (conQR) {
+            const mods = modulosQR(texto) || 57;
+            const ladoMax = Math.min(anchoInterior, Math.round(H * (conBarras ? 0.40 : 0.62)));
+            mag = Math.min(10, Math.max(1, Math.floor(ladoMax / mods)));
+            ladoQR = mods * mag;
+        }
+        if (conBarras) {
+            const modulos = estimarModulosCode128(texto);
+            wBar = Math.max(1, Math.min(4, Math.floor(anchoInterior / (modulos * 1.04))));
+            anchoBarras = Math.min(anchoInterior, modulos * wBar);
+            altoBarras = Math.round(H * (conQR ? 0.22 : 0.50));
+        }
+
+        const bloque = (conQR ? ladoQR + hueco : 0) + (conBarras ? altoBarras + hueco : 0) + fTxt;
+        let y = Math.max(margen, Math.round((H - bloque) / 2));
+        let zpl = `^XA\n^CI28\n^PW${W}\n^LL${H}\n`;
+        if (conQR) {
+            const xQR = Math.max(margen, Math.round((W - ladoQR) / 2));
+            zpl += `^FO${xQR},${y}^BQN,2,${mag}^FDQA,${texto}^FS\n`;
+            y += ladoQR + hueco;
+        }
+        if (conBarras) {
+            const xB = margen + Math.max(0, Math.floor((anchoInterior - anchoBarras) / 2));
+            zpl += `^BY${wBar},3,${altoBarras}\n^FO${xB},${y}^BCN,${altoBarras},N,N,N,A^FD${texto}^FS\n`;
+            y += altoBarras + hueco;
+        }
+        zpl += `^FO${margen},${y}^A0N,${fTxt},${fTxt}^FB${anchoInterior},1,0,C^FD${texto}^FS\n^PQ${copias},0,1,N\n^XZ`;
+        return zpl;
+    }
+
+    // Valida y devuelve un mensaje de error (o null si todo está bien).
+    function validarEtqLibre(base, lista, tipo) {
+        if (!base) return 'Escribe el texto o código que quieres imprimir.';
+        if (/[\^~]/.test(base)) return 'El texto no puede contener los caracteres ^ o ~.';
+        const conBarras = tipo === 'barras' || tipo === 'ambos';
+        const conQR = tipo === 'qr' || tipo === 'ambos';
+        const masLargo = lista.reduce((a, b) => (b.length > a.length ? b : a), '');
+        if (conBarras && /[^\x20-\x7E]/.test(masLargo)) return 'El código de barras solo admite letras sin acento, números y símbolos básicos.';
+        if (conQR && modulosQR(masLargo) === null) return 'El texto es demasiado largo para un QR.';
+        const anchoMM = parseFloat(localStorage.getItem('labelWidthMM')) || 50;
+        const anchoInterior = mmADots(anchoMM) - Math.max(6, Math.round(mmADots(anchoMM) * 0.03)) * 2;
+        if (conBarras && estimarModulosCode128(masLargo) * 1.04 > anchoInterior)
+            return `"${masLargo}" es muy largo para un código de barras en una etiqueta de ${anchoMM} mm. Usa un texto más corto o solo QR.`;
+        return null;
+    }
+
+    function actualizarResumenEtqLibre() {
+        const { base, cant, correlativo } = leerFormEtqLibre();
+        const el = document.getElementById('txtEtqLibreResumen');
+        const box = document.getElementById('boxPreviewEtqLibre');
+        if (!base) { el.textContent = 'Escribe el texto para ver el resumen.'; box.style.display = 'none'; return; }
+        const lista = listaEtiquetasLibres(base, cant, correlativo);
+        el.textContent = (correlativo && cant > 1)
+            ? `${cant} etiquetas: ${lista[0]} → ${lista[lista.length - 1]}`
+            : `${cant} etiqueta${cant > 1 ? 's' : ''}: ${base}`;
+
+        // Vista previa de la primera etiqueta
+        const cnv = document.getElementById('cnvEtqLibreQR');
+        const svg = document.getElementById('svgEtqLibreBar');
+        document.getElementById('txtEtqLibrePreview').textContent = lista[0];
+        box.style.display = 'block';
+        cnv.style.display = 'none'; svg.style.display = 'none';
+        if ((tipoEtqLibre === 'qr' || tipoEtqLibre === 'ambos') && typeof QRious !== 'undefined') {
+            try { new QRious({ element: cnv, value: lista[0], size: 120, level: 'Q' }); cnv.style.display = 'block'; } catch (e) {}
+        }
+        if ((tipoEtqLibre === 'barras' || tipoEtqLibre === 'ambos') && typeof JsBarcode !== 'undefined') {
+            try { JsBarcode(svg, lista[0], { format: 'CODE128', height: 45, displayValue: false, margin: 4 }); svg.style.display = 'block'; } catch (e) {}
+        }
+    }
+    document.getElementById('inpEtqLibreTexto').addEventListener('input', actualizarResumenEtqLibre);
+    document.getElementById('inpEtqLibreCant').addEventListener('input', actualizarResumenEtqLibre);
+    document.getElementById('chkEtqLibreCorrelativo').addEventListener('change', actualizarResumenEtqLibre);
+
+    async function imprimirEtiquetasLibres() {
+        if (imprimiendoEtqLibre) return;
+        const { base, cant, correlativo } = leerFormEtqLibre();
+        const lista = listaEtiquetasLibres(base, cant, correlativo);
+        const error = validarEtqLibre(base, lista, tipoEtqLibre);
+        if (error) { alert('⚠️ ' + error); return; }
+        if (cant > 100 && !confirm(`Se van a imprimir ${cant} etiquetas. ¿Continuar?`)) return;
+
+        imprimiendoEtqLibre = true;
+        const btn = document.getElementById('btnImprimirEtqLibre');
+        const textoOriginal = btn.textContent;
+        btn.style.opacity = '0.6';
+        try {
+            let ok = true, impresas = 0;
+            if (!correlativo) {
+                // Mismo texto: un solo trabajo con N copias.
+                ok = await enviarZPLaImpresora(generarZPLEtiquetaLibre(base, tipoEtqLibre, cant));
+                if (ok) impresas = cant;
+            } else {
+                // Correlativo: bloques de 25 para no saturar el mini servidor de la impresora.
+                const BLOQUE = 25;
+                for (let ini = 0; ini < lista.length; ini += BLOQUE) {
+                    const fin = Math.min(lista.length, ini + BLOQUE);
+                    const zpls = lista.slice(ini, fin).map(t => generarZPLEtiquetaLibre(t, tipoEtqLibre, 1));
+                    ok = await enviarZPLaImpresora(zpls.join('\n'));
+                    if (!ok) break;
+                    impresas = fin;
+                    btn.textContent = `🖨️ ENVIADAS ${impresas}/${lista.length}...`;
+                    if (fin < lista.length) await new Promise(r => setTimeout(r, 1500));
+                }
+            }
+            if (impresas > 0) showToast();
+        } finally {
+            btn.textContent = textoOriginal;
+            setTimeout(() => { imprimiendoEtqLibre = false; btn.style.opacity = '1'; }, 800);
         }
     }
 
