@@ -473,6 +473,12 @@
         #reproSideMenu .side-menu-item:focus-visible, #reproSideMenu .side-menu-close:focus-visible, #reproSideMenu .btn-salir:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
         #reproSideMenu .side-menu-item .ico { width: 20px; height: 20px; color: var(--text-muted); }
         #reproSideMenu .side-menu-item .chev { margin-left: auto; width: 16px; height: 16px; }
+        .repro-hint { font-size: 11px; font-weight: 500; color: var(--text-muted); margin: -2px 2px 12px; line-height: 1.35; }
+        .repro-ubi-input { width: 100%; box-sizing: border-box; min-height: 52px; padding: 12px; font-size: 18px; font-weight: 800; text-align: center; text-transform: uppercase;
+            border: 2px solid var(--primary); border-radius: var(--radius-md); outline: none; background: var(--card-bg); color: var(--text-main); font-family: inherit; margin-bottom: 8px; }
+        .repro-ubi-aviso { min-height: 18px; font-size: 12px; font-weight: 700; margin-bottom: 12px; text-align: center; color: var(--text-muted); }
+        .repro-ubi-aviso.ok { color: var(--success); }
+        .repro-ubi-aviso.error { color: var(--danger); }
         .etq-tipo-btn { flex:1; padding:9px 4px; font-size:12px; font-weight:800; border:2px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text-muted); }
         .etq-tipo-btn.activo { border-color:var(--print-color); background:var(--print-color); color:#fff; }
     </style>
@@ -533,9 +539,10 @@
                     </select>
                 </label>
                 <label class="repro-field"><span class="repro-label">Ubicación</span>
-                    <input type="text" id="ubicacionManualRepro" placeholder="Opcional" style="text-transform:uppercase;">
+                    <input type="text" id="ubicacionManualRepro" placeholder="DIN… / PL…" autocomplete="off" oninput="aplicarZonaPorUbicacionRepro(this.value)" style="text-transform:uppercase;">
                 </label>
             </div>
+            <div class="repro-hint">DIN → Observados · PL → Post venta. Con otra ubicación se te pedirá una sola vez.</div>
             <input type="text" id="zonaOtrosInputRepro" placeholder="ESPECIFICAR ZONA" style="display:none; width:100%; padding:9px; margin-bottom:10px; text-transform:uppercase; border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box;">
 
             <label class="repro-switch-row">
@@ -556,6 +563,20 @@
 </div>
 
 <div id="toast">ÉXITO ✓</div>
+
+<!-- MODAL UBICACIÓN REPRO (cuando la ubicación no empieza con DIN ni PL) -->
+<div id="modalUbicacionRepro" class="modal" style="z-index: 6950;">
+    <div class="modal-content" style="max-width:320px; text-align:center;">
+        <h3 style="margin:0 0 6px; font-size:16px;">Indica la ubicación</h3>
+        <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-bottom:4px;">Paquete</div>
+        <div id="ubiReproCodigo" style="font-size:14px; font-weight:800; margin-bottom:12px; word-break:break-all;"></div>
+        <input type="text" id="inpUbicacionModalRepro" class="repro-ubi-input" placeholder="UBICACIÓN" autocomplete="off"
+            oninput="actualizarAvisoUbicacionRepro()" onkeydown="if(event.key==='Enter'){confirmarUbicacionRepro();}">
+        <div id="ubiReproAviso" class="repro-ubi-aviso"></div>
+        <button class="repro-btn" style="margin-bottom:8px;" onclick="confirmarUbicacionRepro()">Guardar con esta ubicación</button>
+        <button class="repro-btn" style="background:var(--text-muted);" onclick="cancelarUbicacionRepro()">Cancelar</button>
+    </div>
+</div>
 
 <!-- MODAL RESULTADO REPRO (coincidencia en base central) -->
 <div id="modalResultadoRepro" class="modal" style="z-index: 6900;">
@@ -5622,7 +5643,76 @@
         return false;
     }
 
-    function registrarRepro(esForzado = false, confirmarDuplicado = false) {
+    // Regla de zona según el prefijo de la ubicación: DIN → OBSERVADOS, PL → POST VENTA
+    function zonaPorUbicacionRepro(ubi) {
+        const u = String(ubi || '').trim().toUpperCase();
+        if (u.startsWith('DIN')) return 'OBSERVADOS';
+        if (u.startsWith('PL')) return 'POST VENTA';
+        return null;
+    }
+
+    function aplicarZonaPorUbicacionRepro(ubi) {
+        const z = zonaPorUbicacionRepro(ubi);
+        if (!z) return null;
+        const sel = document.getElementById('zonaSelectRepro');
+        if (sel && sel.value !== z) sel.value = z;
+        toggleZonaOtrosRepro();
+        return z;
+    }
+
+    let pendienteUbicacionRepro = null;
+    let ubiReproConfirmada = ''; // ubicación (no DIN/PL) ya confirmada en el modal: no se vuelve a preguntar mientras no cambie
+
+    function abrirModalUbicacionRepro(cod, esForzado, confirmarDuplicado) {
+        pendienteUbicacionRepro = { cod, esForzado, confirmarDuplicado };
+        document.getElementById('inpScanRepro').value = '';
+        document.getElementById('ubiReproCodigo').textContent = cod;
+        const inp = document.getElementById('inpUbicacionModalRepro');
+        inp.value = (document.getElementById('ubicacionManualRepro').value || '').trim().toUpperCase();
+        actualizarAvisoUbicacionRepro();
+        document.getElementById('modalUbicacionRepro').style.display = 'flex';
+        setTimeout(() => { inp.focus(); inp.select(); }, 60);
+        if (typeof playBeep === 'function') playBeep(400);
+    }
+
+    function actualizarAvisoUbicacionRepro() {
+        const v = (document.getElementById('inpUbicacionModalRepro').value || '').trim();
+        const av = document.getElementById('ubiReproAviso');
+        const z = zonaPorUbicacionRepro(v);
+        av.className = 'repro-ubi-aviso' + (z ? ' ok' : '');
+        av.textContent = z ? ('Zona: ' + z) : 'Zona: la seleccionada en pantalla';
+    }
+
+    function confirmarUbicacionRepro() {
+        if (!pendienteUbicacionRepro) return;
+        const inp = document.getElementById('inpUbicacionModalRepro');
+        const v = (inp.value || '').trim().toUpperCase();
+        if (!v) {
+            const av = document.getElementById('ubiReproAviso');
+            av.className = 'repro-ubi-aviso error';
+            av.textContent = 'Escribe la ubicación para guardar';
+            inp.focus();
+            return;
+        }
+        const pend = pendienteUbicacionRepro;
+        pendienteUbicacionRepro = null;
+        document.getElementById('modalUbicacionRepro').style.display = 'none';
+        document.getElementById('ubicacionManualRepro').value = v;
+        ubiReproConfirmada = v;
+        document.getElementById('inpScanRepro').value = pend.cod;
+        registrarRepro(pend.esForzado, pend.confirmarDuplicado, true);
+    }
+
+    function cancelarUbicacionRepro() {
+        const pend = pendienteUbicacionRepro;
+        pendienteUbicacionRepro = null;
+        document.getElementById('modalUbicacionRepro').style.display = 'none';
+        const scan = document.getElementById('inpScanRepro');
+        if (pend) scan.value = pend.cod;
+        scan.focus();
+    }
+
+    function registrarRepro(esForzado = false, confirmarDuplicado = false, ubicacionConfirmada = false) {
         const scan = document.getElementById('inpScanRepro');
         let cod = limpiarCodigo(scan.value);
         if (!cod) return;
@@ -5645,6 +5735,14 @@
             mostrarToastRepro(`⚠️ ${cod} ya fue escaneado en este turno`, 'var(--danger)');
             return;
         }
+
+        // Ubicación: DIN → OBSERVADOS, PL → POST VENTA; cualquier otra pide la ubicación en un modal
+        const ubiEscrita = (document.getElementById('ubicacionManualRepro').value || '').trim().toUpperCase();
+        if (!zonaPorUbicacionRepro(ubiEscrita) && !(ubiEscrita && ubiEscrita === ubiReproConfirmada) && !ubicacionConfirmada) {
+            abrirModalUbicacionRepro(cod, esForzado, confirmarDuplicado);
+            return;
+        }
+        aplicarZonaPorUbicacionRepro(ubiEscrita);
 
         const zSelect = document.getElementById('zonaSelectRepro').value;
         const zZona = (zSelect === 'OTROS' && document.getElementById('zonaOtrosInputRepro').value)
