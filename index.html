@@ -415,55 +415,142 @@
         .modo-btn.repro { border-color:var(--success); color:var(--success); }
         .btn-toggle-modo { background: var(--header-surface); border:none; color: var(--header-text); padding:5px 8px; border-radius:6px; font-size:10px; font-weight:800; cursor:pointer; }
 
+        /* ===== REPROGRAMACIONES: rediseño (header claro, panel de resultado, switch, recientes, menú) ===== */
+        .repro-header { background: var(--header-bg); background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.05) 100%);
+            color: var(--header-text); padding: 10px 14px; gap: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); border-bottom: 1px solid var(--border); }
+        .repro-header .repro-menu-toggle { background: var(--header-surface); border: 1px solid var(--header-surface-border); color: var(--header-text);
+            width: 40px; height: 40px; padding: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+        .repro-header .repro-menu-toggle .ico { width: 20px; height: 20px; }
+        .repro-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .repro-header h2 { font-size: 15px; font-weight: 800; color: var(--header-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .repro-sub { font-size: 11px; font-weight: 600; color: var(--header-text-muted); }
+        .repro-sub b { color: var(--primary); font-weight: 800; font-variant-numeric: tabular-nums; }
+        .repro-header .btn-toggle-modo { display: flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 12px 0 8px; border-radius: 10px; font-family: inherit;
+            font-size: 12px; font-weight: 700; background: var(--header-surface); border: 1px solid var(--header-surface-border); color: var(--header-text); flex-shrink: 0; }
+        .repro-header .btn-toggle-modo .ico { width: 18px; height: 18px; }
+        .repro-menu-toggle:focus-visible, .btn-toggle-modo:focus-visible, .repro-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .repro-label { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 5px 2px; }
+        .repro-field { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .repro-field select, .repro-field input { width: 100%; min-height: 46px; }
+        .repro-input { margin-bottom: 12px; }
+        .repro-card .repro-scan-label { margin-bottom: 6px; }
+        .repro-last { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border: 1px solid var(--border); border-style: solid; background: var(--bg);
+            color: var(--text-muted); font-size: 12.5px; font-weight: 700; text-align: left; line-height: 1.3; }
+        .repro-last .ico { width: 20px; height: 20px; flex-shrink: 0; }
+        .repro-last.estado-ok { background: color-mix(in srgb, var(--success) 12%, var(--card-bg)); border-color: color-mix(in srgb, var(--success) 45%, transparent); color: var(--success); }
+        .repro-last.estado-warn { background: color-mix(in srgb, var(--warning) 14%, var(--card-bg)); border-color: color-mix(in srgb, var(--warning) 50%, transparent); color: var(--warning); }
+        .repro-last.estado-error { background: color-mix(in srgb, var(--danger) 12%, var(--card-bg)); border-color: color-mix(in srgb, var(--danger) 45%, transparent); color: var(--danger); }
+        .repro-last .rl-txt { min-width: 0; word-break: break-word; }
+        .repro-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 10px 12px; margin-bottom: 12px;
+            border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); cursor: pointer; transition: background .15s, border-color .15s; }
+        .repro-switch-row:has(input:checked) { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--card-bg)); }
+        .repro-switch-row .rs-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .repro-switch-row .rs-name { font-size: 13.5px; font-weight: 650; color: var(--text-main); }
+        .repro-switch-row .rs-desc { font-size: 11px; font-weight: 500; color: var(--text-muted); line-height: 1.3; }
+        .repro-switch-row input:focus-visible + .slider { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .repro-card .repro-btn { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; font-size: 14px; text-transform: none; letter-spacing: 0.01em; }
+        .repro-card .repro-btn .ico { width: 20px; height: 20px; }
+        .repro-recientes-title { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 4px 2px 8px; }
+        .rr-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; margin-bottom: 8px; background: var(--card-bg);
+            border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+        .rr-item:active { background: var(--bg); }
+        .rr-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .rr-cod { font-size: 13px; font-weight: 800; color: var(--text-main); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; }
+        .rr-meta { font-size: 11px; font-weight: 500; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rr-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+        .rr-tag { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); border: 1px solid color-mix(in srgb, var(--success) 35%, transparent); }
+        .rr-tag.warn { color: var(--warning); background: color-mix(in srgb, var(--warning) 14%, transparent); border-color: color-mix(in srgb, var(--warning) 40%, transparent); }
+        .rr-hora { font-size: 11px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        /* menú lateral de Repros: misma estructura que el menú principal */
+        #reproSideMenu { width: 296px; max-width: 86vw; left: -320px; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+        #reproSideMenu .side-menu-body { flex: 1; overflow-y: auto; }
+        #reproSideMenu .side-menu-item { width: 100%; min-height: 52px; padding: 10px 12px; gap: 12px; display: flex; align-items: center; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--card-bg); box-shadow: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-main); text-transform: none; letter-spacing: 0;
+            cursor: pointer; text-align: left; transition: background .15s; }
+        #reproSideMenu .side-menu-item::after { content: none; }
+        #reproSideMenu .side-menu-item:active { background: var(--bg); }
+        #reproSideMenu .side-menu-item:focus-visible, #reproSideMenu .side-menu-close:focus-visible, #reproSideMenu .btn-salir:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        #reproSideMenu .side-menu-item .ico { width: 20px; height: 20px; color: var(--text-muted); }
+        #reproSideMenu .side-menu-item .chev { margin-left: auto; width: 16px; height: 16px; }
         .etq-tipo-btn { flex:1; padding:9px 4px; font-size:12px; font-weight:800; border:2px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text-muted); }
         .etq-tipo-btn.activo { border-color:var(--print-color); background:var(--print-color); color:#fff; }
     </style>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol><symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol><symbol id="i-warehouse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/></symbol><symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></symbol><symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol><symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol><symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></symbol><symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol><symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol><symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-chevdown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol></defs></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol><symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol><symbol id="i-warehouse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/></symbol><symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></symbol><symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol><symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol><symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></symbol><symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol><symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol><symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-chevdown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-okc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol><symbol id="i-xc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol><symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></symbol><symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol></defs></svg>
 
 <!-- MENÚ LATERAL REPRO (deslizable) -->
 <div id="reproSideMenuOverlay" onclick="cerrarMenuLateralRepro()"></div>
-<div id="reproSideMenu">
-    <div class="repro-side-title">
-        Opciones Repros
-        <button class="repro-menu-toggle" onclick="cerrarMenuLateralRepro()">✕</button>
+<div id="reproSideMenu" role="dialog" aria-label="Opciones de Reprogramaciones">
+    <div class="side-menu-header">
+        <div>
+            <h4>REPROGRAMACIONES</h4>
+            <div class="side-menu-subtitle">Opciones</div>
+        </div>
+        <button class="side-menu-close" onclick="cerrarMenuLateralRepro()" aria-label="Cerrar menú"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
-    <button class="repro-btn" style="background:var(--primary); margin-bottom:8px;" onclick="cerrarMenuLateralRepro(); abrirModalListaRepro()">📋 Ver últimos escaneos</button>
-    <button class="repro-btn" style="background:var(--text-muted); margin-bottom:8px;" onclick="cerrarMenuLateralRepro(); abrirModalResumenRutasRepro()">📊 Ver avance por ruta</button>
-    <button class="repro-btn" style="background:var(--danger);" onclick="cerrarMenuLateralRepro(); abrirModalFaltantesRepro()">🔎 Ver faltantes por ruta</button>
+    <div class="side-menu-body">
+        <div class="side-menu-section-title">Consulta</div>
+        <button class="side-menu-item" onclick="cerrarMenuLateralRepro(); abrirModalListaRepro()"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><span>Ver últimos escaneos</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cerrarMenuLateralRepro(); abrirModalResumenRutasRepro()"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>Ver avance por ruta</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cerrarMenuLateralRepro(); abrirModalFaltantesRepro()"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span>Ver faltantes por ruta</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+    </div>
+    <div class="side-menu-footer">
+        <div class="side-menu-user">
+            <span class="avatar" id="avatarRepro">?</span>
+            <span class="meta"><span class="nm" id="reproMenuUserName">—</span><span class="rl" id="reproMenuUserRole">Operador</span></span>
+        </div>
+        <button class="btn-salir" onclick="cerrarMenuLateralRepro(); cerrarPantallaRepro(); cerrarSesion();"><svg class="ico" aria-hidden="true"><use href="#i-logout"/></svg><span>Cerrar sesión</span></button>
+        <div class="side-menu-ver">REVERSA · Reprogramaciones</div>
+    </div>
 </div>
 
 <!-- PANTALLA REPROGRAMACIONES (integrada, overlay) -->
 <div id="screenRepro">
     <div class="repro-header">
-        <button class="repro-menu-toggle" onclick="abrirMenuLateralRepro()" title="Menú">☰</button>
-        <h2>🔄 Reprogramaciones <span class="repro-total" id="tTotalRepro">0</span></h2>
-        <button class="btn-toggle-modo" onclick="cerrarPantallaRepro()">📦 Volver a Ruteo Dinámico IL</button>
+        <button class="repro-menu-toggle" onclick="abrirMenuLateralRepro()" title="Menú" aria-label="Abrir menú"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
+        <div class="repro-title">
+            <h2>Reprogramaciones</h2>
+            <div class="repro-sub"><b id="tTotalRepro">0</b> registros</div>
+        </div>
+        <button class="btn-toggle-modo" onclick="cerrarPantallaRepro()" title="Volver a Ruteo Dinámico IL" aria-label="Volver a Ruteo Dinámico IL"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Volver</span></button>
     </div>
     <div class="repro-body">
         <div class="repro-card">
-            <input type="text" id="inpScanRepro" class="repro-input" placeholder="CÓDIGO DE PAQUETE" autocomplete="off"
+            <label class="repro-label repro-scan-label" for="inpScanRepro">Código de paquete</label>
+            <input type="text" id="inpScanRepro" class="repro-input" placeholder="ESCANEE AQUÍ..." autocomplete="off"
                 onkeydown="if(event.key==='Enter'){registrarRepro(document.getElementById('checkForzadoRepro').checked);}">
 
-            <div id="reproLastBox" class="repro-last">Esperando escaneo...</div>
+            <div id="reproLastBox" class="repro-last" role="status" aria-live="polite"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg><span class="rl-txt">Esperando escaneo</span></div>
 
             <div class="repro-row">
-                <select id="zonaSelectRepro" onchange="toggleZonaOtrosRepro()">
-                    <option value="POST VENTA">POST VENTA</option>
-                    <option value="OBSERVADOS">OBSERVADOS</option>
-                    <option value="OTROS">OTROS</option>
-                </select>
-                <input type="text" id="ubicacionManualRepro" placeholder="UBICACIÓN" style="text-transform:uppercase;">
+                <label class="repro-field"><span class="repro-label">Zona</span>
+                    <select id="zonaSelectRepro" onchange="toggleZonaOtrosRepro()">
+                        <option value="POST VENTA">POST VENTA</option>
+                        <option value="OBSERVADOS">OBSERVADOS</option>
+                        <option value="OTROS">OTROS</option>
+                    </select>
+                </label>
+                <label class="repro-field"><span class="repro-label">Ubicación</span>
+                    <input type="text" id="ubicacionManualRepro" placeholder="Opcional" style="text-transform:uppercase;">
+                </label>
             </div>
             <input type="text" id="zonaOtrosInputRepro" placeholder="ESPECIFICAR ZONA" style="display:none; width:100%; padding:9px; margin-bottom:10px; text-transform:uppercase; border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box;">
 
-            <div class="repro-row" style="align-items:center;">
-                <label class="repro-check">
-                    <input type="checkbox" id="checkForzadoRepro"> Permitir forzado
-                </label>
-            </div>
-            <button class="repro-btn" onclick="registrarRepro(document.getElementById('checkForzadoRepro').checked)">Registrar</button>
+            <label class="repro-switch-row">
+                <span class="rs-text"><span class="rs-name">Permitir forzado</span><span class="rs-desc">Registra aunque el código no cumpla las reglas de formato</span></span>
+                <span class="side-switch">
+                    <input type="checkbox" role="switch" id="checkForzadoRepro" aria-label="Permitir forzado">
+                    <span class="slider"></span>
+                </span>
+            </label>
+            <button class="repro-btn" onclick="registrarRepro(document.getElementById('checkForzadoRepro').checked)"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span>Registrar</span></button>
+        </div>
+
+        <div id="reproRecientesWrap" style="display:none;">
+            <div class="repro-recientes-title">Últimos registros</div>
+            <div id="reproRecientes"></div>
         </div>
     </div>
 </div>
@@ -5719,13 +5806,42 @@
     function mostrarToastRepro(texto, color) {
         const box = document.getElementById('reproLastBox');
         if (!box) return;
-        box.innerHTML = `<span style="color:${color}; font-weight:800;">${texto}</span>`;
+        const c = String(color || '');
+        const estado = c.includes('danger') ? 'error' : (c.includes('warning') ? 'warn' : 'ok');
+        const icono = estado === 'error' ? 'xc' : (estado === 'warn' ? 'warn' : 'okc');
+        const limpio = String(texto || '').replace(/^[^\p{L}\p{N}]+/u, '');
+        box.className = 'repro-last estado-' + estado;
+        box.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-' + icono + '"/></svg><span class="rl-txt"></span>';
+        box.querySelector('.rl-txt').textContent = limpio;
+        if (estado !== 'ok' && navigator.vibrate) { try { navigator.vibrate(estado === 'error' ? [120, 60, 120] : 80); } catch (e) {} }
+    }
+
+    function escHtmlRepro(v) {
+        return String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    // Últimos 5 registros visibles directamente en la pantalla (tocar uno abre su detalle)
+    function renderRecientesRepro() {
+        const cont = document.getElementById('reproRecientes');
+        const wrap = document.getElementById('reproRecientesWrap');
+        if (!cont || !wrap) return;
+        const ult = (typeof registrosRepro !== 'undefined' ? registrosRepro : []).slice(0, 5);
+        wrap.style.display = ult.length ? '' : 'none';
+        cont.innerHTML = ult.map(r => {
+            const inv = r.resultado === 'INVENTARIADO';
+            const meta = [r.ruta && r.ruta !== '-' ? 'Ruta ' + r.ruta : '', r.zona || '', r.ubi || ''].filter(Boolean).map(escHtmlRepro).join(' · ');
+            return '<div class="rr-item" onclick="abrirDetalleRepro(\'' + escHtmlRepro(r.id) + '\')">' +
+                '<div class="rr-main"><div class="rr-cod">' + escHtmlRepro(r.codigo) + '</div><div class="rr-meta">' + (meta || '—') + '</div></div>' +
+                '<div class="rr-side"><span class="rr-tag' + (inv ? ' warn' : '') + '">' + escHtmlRepro(r.categoria || r.resultado || '') + '</span>' +
+                '<span class="rr-hora">' + escHtmlRepro(r.hora || '') + '</span></div></div>';
+        }).join('');
     }
 
     function renderListaRepro() {
         const cont = document.getElementById('reproLista');
         const total = document.getElementById('tTotalRepro');
         if (total) total.textContent = registrosRepro.length;
+        renderRecientesRepro();
         if (!cont) return;
         cont.innerHTML = registrosRepro.slice(0, 60).map(r => `
             <div class="repro-item" style="cursor:pointer;" onclick="abrirDetalleRepro('${r.id}')">
@@ -5998,6 +6114,12 @@
         const a = document.getElementById('avatarHeader'), b = document.getElementById('avatarMenu');
         if (a) a.textContent = ini;
         if (b) b.textContent = ini;
+        const ar = document.getElementById('avatarRepro');
+        if (ar) ar.textContent = ini;
+        const rn = document.getElementById('reproMenuUserName');
+        if (rn) rn.textContent = (u && u !== '@?') ? u : '—';
+        const rr = document.getElementById('reproMenuUserRole');
+        if (rr) { try { rr.textContent = (typeof esAdmin === 'function' && esAdmin()) ? 'Administrador' : 'Operador'; } catch (e) {} }
         const nm = document.getElementById('menuUserName');
         if (nm) nm.textContent = (u && u !== '@?') ? u : '—';
         const rl = document.getElementById('menuUserRole');
@@ -6017,6 +6139,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         const du = document.getElementById('displayUser');
         if (du) new MutationObserver(sincronizarUsuario).observe(du, { childList: true, characterData: true, subtree: true });
+        const rm = document.getElementById('reproSideMenu');
+        if (rm) new MutationObserver(sincronizarUsuario).observe(rm, { attributes: true, attributeFilter: ['class'] });
         const sm = document.getElementById('sideMenu');
         if (sm) new MutationObserver(sincronizarUsuario).observe(sm, { attributes: true, attributeFilter: ['class'] });
         sincronizarUsuario(); todo();
