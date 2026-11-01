@@ -246,17 +246,30 @@
         .input-group { display: flex; gap: 8px; margin-bottom: 10px; }
         .main-input { flex: 1; padding: 14px; font-size: 18px; font-weight: 800; text-align: center; border: 2px solid var(--primary); border-radius: var(--radius-md); background: var(--bg); color: var(--text-main); outline: none; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
         .btn-manual { background: var(--success); color: white; border: none; border-radius: var(--radius-md); padding: 0 16px; font-size: 18px; }
-        .zona-chips-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-        .zona-chip-btn { font-size: 10px; font-weight: 800; padding: 5px 9px; border-radius: 12px; border: 1px dashed var(--primary); background: rgba(79,70,229,0.06); color: var(--primary); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-        .zona-chip-btn:hover { background: rgba(79,70,229,0.16); }
-        .zona-chip-btn:active { transform: scale(0.95); }
-        .zona-chip-btn.chip-activo { background: var(--primary); color: #fff; }
-        .zona-chips-toggle-wrap { margin-top: 6px; }
-        .zona-chips-toggle-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; color: var(--text-muted); background: var(--bg); border: 1px dashed var(--border); border-radius: 8px; cursor: pointer; }
-        .zona-chips-toggle-btn:active { transform: scale(0.98); }
-        .zona-chips-toggle-btn .chip-toggle-icon { transition: transform 0.15s ease; }
+        /* ===== Zonas rápidas (rediseño): chips sólidas en cuadrícula, resumen de zona activa ===== */
+        .zona-chips-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .zona-chip-btn { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 10px;
+            font-family: inherit; font-size: 12.5px; font-weight: 700; line-height: 1.2; text-align: center; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; transition: background .15s, border-color .15s; }
+        .zona-chip-btn:hover { background: var(--bg); }
+        .zona-chip-btn:active { transform: scale(0.97); }
+        .zona-chip-btn .ico-check { display: none; width: 15px; height: 15px; flex-shrink: 0; }
+        .zona-chip-btn.chip-activo { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .zona-chip-btn.chip-activo .ico-check { display: inline-block; }
+        .zona-chip-btn:focus-visible, .zona-chips-toggle-btn:focus-visible, .btn-limpiar-zona:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .zona-chips-toggle-wrap { margin-top: 8px; }
+        .zona-chips-toggle-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
+            font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text-main); background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+        .zona-chips-toggle-btn:active { transform: scale(0.99); }
+        .zt-left { display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+        .zt-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .zt-sel { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700;
+            background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); }
+        .zona-chips-toggle-btn .chip-toggle-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted); transition: transform 0.15s ease; }
         .zona-chips-toggle-btn.abierto .chip-toggle-icon { transform: rotate(180deg); }
-        .zona-chips-toggle-wrap .zona-chips-row { margin-top: 6px; }
+        .btn-limpiar-zona { grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-limpiar-zona .ico { width: 14px; height: 14px; }
 
         .form-row { display: grid; grid-template-columns: 50px 1fr 1fr 1.2fr; gap: 5px; }
         .form-row input, .form-row select { width: 100%; padding: 10px 4px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 11px; text-align: center; background: var(--bg); color: var(--text-main); font-weight: 700; outline: none; height: 41px; }
@@ -407,7 +420,7 @@
     </style>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol><symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol><symbol id="i-warehouse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/></symbol><symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></symbol><symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol><symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol><symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></symbol><symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol><symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol><symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol></defs></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol><symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol><symbol id="i-warehouse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/></symbol><symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/></symbol><symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol><symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol><symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></symbol><symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol><symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol><symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-chevdown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol></defs></svg>
 
 <!-- MENÚ LATERAL REPRO (deslizable) -->
 <div id="reproSideMenuOverlay" onclick="cerrarMenuLateralRepro()"></div>
@@ -869,18 +882,19 @@
         </div>
 
         <div class="zona-chips-toggle-wrap" id="wrapZonaChipsMobile">
-            <button type="button" class="zona-chips-toggle-btn" id="btnToggleZonaChips" onclick="toggleZonaChipsRow()">
-                <span>🏷️ Zonas rápidas</span>
-                <span class="chip-toggle-icon" id="iconToggleZonaChips">▾</span>
+            <button type="button" class="zona-chips-toggle-btn" id="btnToggleZonaChips" aria-expanded="false" onclick="toggleZonaChipsRow()">
+                <span class="zt-left"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg><span>Zonas rápidas</span></span>
+                <span class="zt-right"><span class="zt-sel" id="zonaResumen" style="display:none"></span><svg class="ico chip-toggle-icon" aria-hidden="true"><use href="#i-chevdown"/></svg></span>
             </button>
             <div class="zona-chips-row" id="zonaChipsMobile" style="display:none;">
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('Posterior - IL', this)">Posterior - IL</button>
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('Devolución Seller', this)">Devolución Seller</button>
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('Devolucion Bu', this)">Devolucion Bu</button>
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('Sin Registros IL', this)">Sin Registros IL</button>
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('Espera', this)">Espera</button>
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('Racks', this)">Racks</button>
-                <button type="button" class="zona-chip-btn" onclick="setZonaRapida('IL', this)">IL</button>
+                <button type="button" class="zona-chip-btn" data-zona="Posterior - IL" data-i="0" aria-pressed="false" onclick="setZonaRapida('Posterior - IL', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>Posterior - IL</span></button>
+                <button type="button" class="zona-chip-btn" data-zona="Devolución Seller" data-i="1" aria-pressed="false" onclick="setZonaRapida('Devolución Seller', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>Devolución Seller</span></button>
+                <button type="button" class="zona-chip-btn" data-zona="Devolucion Bu" data-i="2" aria-pressed="false" onclick="setZonaRapida('Devolucion Bu', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>Devolucion Bu</span></button>
+                <button type="button" class="zona-chip-btn" data-zona="Sin Registros IL" data-i="3" aria-pressed="false" onclick="setZonaRapida('Sin Registros IL', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>Sin Registros IL</span></button>
+                <button type="button" class="zona-chip-btn" data-zona="Espera" data-i="4" aria-pressed="false" onclick="setZonaRapida('Espera', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>Espera</span></button>
+                <button type="button" class="zona-chip-btn" data-zona="Racks" data-i="5" aria-pressed="false" onclick="setZonaRapida('Racks', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>Racks</span></button>
+                <button type="button" class="zona-chip-btn" data-zona="IL" data-i="6" aria-pressed="false" onclick="setZonaRapida('IL', this)"><svg class="ico ico-check" aria-hidden="true"><use href="#i-check"/></svg><span>IL</span></button>
+                <button type="button" class="btn-limpiar-zona" id="btnLimpiarZona" style="display:none" onclick="limpiarZonaRapida()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg><span>Quitar zona</span></button>
             </div>
         </div>
         
@@ -1777,18 +1791,75 @@
         }
     }
 
-    function setZonaRapida(valor, btnEl) {
-        document.getElementById('inpZona').value = valor;
-        localStorage.setItem('zonaFijaAuto', valor);
-        if (modoControlSeguridadActivo) actualizarPanelControlSeguridad();
+    function zonasChipsLista() { return Array.from(document.querySelectorAll('#zonaChipsMobile .zona-chip-btn')); }
 
-        document.querySelectorAll('.zona-chip-btn').forEach(b => {
-            b.classList.toggle('chip-activo', b.textContent === valor);
+    // Marca la chip activa según el campo Zona, muestra la zona en la barra
+    // cerrada y el botón "Quitar zona" solo cuando hay una zona puesta.
+    function sincronizarZonasRapidas() {
+        const inp = document.getElementById('inpZona');
+        if (!inp) return;
+        const texto = (inp.value || '').trim();
+        const val = texto.toLowerCase();
+        zonasChipsLista().forEach(b => {
+            const on = !!val && (b.dataset.zona || '').toLowerCase() === val;
+            if (b.classList.contains('chip-activo') !== on) {
+                b.classList.toggle('chip-activo', on);
+                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            }
         });
+        const res = document.getElementById('zonaResumen');
+        if (res) {
+            if (res.textContent !== texto) res.textContent = texto;
+            res.style.display = texto ? '' : 'none';
+        }
+        const lim = document.getElementById('btnLimpiarZona');
+        if (lim) lim.style.display = texto ? '' : 'none';
+    }
 
+    // Las zonas más usadas en este dispositivo se muestran primero.
+    function ordenarZonasRapidas() {
+        const row = document.getElementById('zonaChipsMobile');
+        const lim = document.getElementById('btnLimpiarZona');
+        if (!row) return;
+        let uso = {};
+        try { uso = JSON.parse(localStorage.getItem('zonaRapidaUso') || '{}') || {}; } catch (e) { uso = {}; }
+        zonasChipsLista()
+            .map(b => ({ b, i: Number(b.dataset.i) || 0, n: uso[b.dataset.zona] || 0 }))
+            .sort((x, y) => (y.n - x.n) || (x.i - y.i))
+            .forEach(o => row.insertBefore(o.b, lim));
+    }
+
+    function cerrarZonasRapidas() {
+        const row = document.getElementById('zonaChipsMobile');
+        const btn = document.getElementById('btnToggleZonaChips');
+        if (row) row.style.display = 'none';
+        if (btn) { btn.classList.remove('abierto'); btn.setAttribute('aria-expanded', 'false'); }
+    }
+
+    function aplicarZonaRapida(nuevo) {
+        document.getElementById('inpZona').value = nuevo;
+        localStorage.setItem('zonaFijaAuto', nuevo);
+        if (modoControlSeguridadActivo) actualizarPanelControlSeguridad();
+        sincronizarZonasRapidas();
+        cerrarZonasRapidas();
         const inp = document.getElementById('inpScan');
         if (inp) inp.focus();
     }
+
+    // Tocar la zona ya activa la quita; tocar otra la reemplaza y cierra el desplegable.
+    function setZonaRapida(valor, btnEl) {
+        const actual = (document.getElementById('inpZona').value || '').trim().toLowerCase();
+        if (actual === String(valor).toLowerCase()) { aplicarZonaRapida(''); return; }
+        try {
+            const uso = JSON.parse(localStorage.getItem('zonaRapidaUso') || '{}') || {};
+            uso[valor] = (uso[valor] || 0) + 1;
+            localStorage.setItem('zonaRapidaUso', JSON.stringify(uso));
+        } catch (e) {}
+        aplicarZonaRapida(valor);
+        ordenarZonasRapidas();
+    }
+
+    function limpiarZonaRapida() { aplicarZonaRapida(''); }
 
     function actualizarVisibilidadZonaChips() {
         const ocultar = modoValidarRutaActivo || modoControlSeguridadActivo;
@@ -1803,8 +1874,9 @@
         const btn = document.getElementById('btnToggleZonaChips');
         if (!row || !btn) return;
         const abrir = row.style.display === 'none';
-        row.style.display = abrir ? 'flex' : 'none';
+        row.style.display = abrir ? 'grid' : 'none';
         btn.classList.toggle('abierto', abrir);
+        btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
     }
 
     function sincronizarControlesEspejo(campo, valor) {
@@ -5937,7 +6009,9 @@
             t.style.display = (b && getComputedStyle(b).display === 'none') ? 'none' : '';
         });
     }
-    function todo() { sincronizarChips(); sincronizarSecciones(); }
+    function todo() { sincronizarChips(); sincronizarSecciones(); if (window.sincronizarZonasRapidas) window.sincronizarZonasRapidas(); }
+    document.addEventListener('DOMContentLoaded', () => { if (window.ordenarZonasRapidas) window.ordenarZonasRapidas(); });
+    document.addEventListener('input', e => { if (e.target && e.target.id === 'inpZona' && window.sincronizarZonasRapidas) window.sincronizarZonasRapidas(); });
     document.addEventListener('change', e => { if (e.target && e.target.closest && e.target.closest('.side-menu')) todo(); });
     setInterval(todo, 400); // cubre cambios hechos por código (exclusividad entre modos)
     document.addEventListener('DOMContentLoaded', () => {
