@@ -539,10 +539,10 @@
                     </select>
                 </label>
                 <label class="repro-field"><span class="repro-label">Ubicación</span>
-                    <input type="text" id="ubicacionManualRepro" placeholder="DIN… / PL…" autocomplete="off" oninput="aplicarZonaPorUbicacionRepro(this.value)" style="text-transform:uppercase;">
+                    <input type="text" id="ubicacionManualRepro" placeholder="DIN… / PL… / RC…" autocomplete="off" oninput="aplicarZonaPorUbicacionRepro(this.value)" style="text-transform:uppercase;">
                 </label>
             </div>
-            <div class="repro-hint">DIN → Observados · PL → Post venta. Con otra ubicación se te pedirá una sola vez.</div>
+            <div class="repro-hint">DIN → Observados · PL o RC → Post venta. Con otra ubicación se te pedirá una sola vez.</div>
             <input type="text" id="zonaOtrosInputRepro" placeholder="ESPECIFICAR ZONA" style="display:none; width:100%; padding:9px; margin-bottom:10px; text-transform:uppercase; border:1px solid var(--border); border-radius:var(--radius-md); box-sizing:border-box;">
 
             <label class="repro-switch-row">
@@ -5643,11 +5643,11 @@
         return false;
     }
 
-    // Regla de zona según el prefijo de la ubicación: DIN → OBSERVADOS, PL → POST VENTA
+    // Regla de zona según el prefijo de la ubicación: DIN → OBSERVADOS, PL o RC → POST VENTA
     function zonaPorUbicacionRepro(ubi) {
         const u = String(ubi || '').trim().toUpperCase();
         if (u.startsWith('DIN')) return 'OBSERVADOS';
-        if (u.startsWith('PL')) return 'POST VENTA';
+        if (u.startsWith('PL') || u.startsWith('RC')) return 'POST VENTA';
         return null;
     }
 
