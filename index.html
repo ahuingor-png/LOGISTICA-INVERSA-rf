@@ -564,6 +564,20 @@
 
 <div id="toast">ÉXITO ✓</div>
 
+<!-- MODAL CD VES: elegir escaneo con / sin base de datos -->
+<div id="modalModoCDVES" class="modal modal-blur" style="z-index: 10050;">
+    <div class="modal-content" style="max-width:340px; text-align:center;">
+        <h3 style="margin:0 0 6px; font-size:17px;">🏭 CD VES</h3>
+        <div style="font-size:13px; color:var(--text-muted); font-weight:600; margin-bottom:14px;">¿Cómo quieres escanear?</div>
+        <div id="avisoModoCDVES" style="display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:rgba(239,68,68,0.12); color:#ef4444; font-size:12px; font-weight:700; line-height:1.4;"></div>
+        <button class="repro-btn" style="margin-bottom:8px;" onclick="elegirModoEscaneoCDVES('CON_BASE')">Con base de datos</button>
+        <div style="font-size:11px; color:var(--text-muted); margin:-2px 0 10px;">Valida contra la base de la ruta <b>1001</b></div>
+        <button class="repro-btn" style="margin-bottom:8px; background:#8b5cf6;" onclick="elegirModoEscaneoCDVES('SIN_BASE')">Sin base de datos</button>
+        <div style="font-size:11px; color:var(--text-muted); margin:-2px 0 10px;">Solo escanea y registra</div>
+        <button class="repro-btn" style="background:var(--text-muted);" onclick="cancelarModalModoCDVES()">Cancelar</button>
+    </div>
+</div>
+
 <!-- MODAL UBICACIÓN REPRO (cuando la ubicación no empieza con DIN ni PL) -->
 <div id="modalUbicacionRepro" class="modal" style="z-index: 6950;">
     <div class="modal-content" style="max-width:320px; text-align:center;">
@@ -1527,6 +1541,8 @@
     let rollActivoCDVES = "";
     let ultimoPLDetectadoCDVES = null; // último PL escaneado en CD VES, para detectar cambios de PL
     const RUTA_FIJA_CDVES = "1001";
+    let cdvesEleccionConfirmada = false; // true cuando ya se eligió con/sin base en el modal
+    let cdvesSinBaseActivo = false;      // true = CD VES escanea sin validar contra la base de datos
     let contadorEtiquetasOperarioSesion = 0; 
 
     // ESCANEO ÁGIL: modo de 2 pasos para el escaneo general. Se deja fija la
@@ -2110,13 +2126,64 @@
     // (irrelevantes aquí, ya que la ruta siempre es fija) se ocultan
     // mientras el modo está activo.
     // ======================================
+    function abrirModalModoCDVES() {
+        const aviso = document.getElementById('avisoModoCDVES');
+        aviso.style.display = 'none';
+        aviso.innerHTML = '';
+        if (typeof cerrarMenuLateral === 'function') { try { cerrarMenuLateral(); } catch (e) {} }
+        document.getElementById('modalModoCDVES').style.display = 'flex';
+    }
+
+    function cancelarModalModoCDVES() {
+        document.getElementById('modalModoCDVES').style.display = 'none';
+        document.getElementById('chkModoCDVES').checked = false;
+        cdvesEleccionConfirmada = false;
+        cdvesSinBaseActivo = false;
+    }
+
+    // Con base: confirma primero que haya base cargada para la ruta 1001.
+    // Sin base: continúa directo, solo escanea (siguen las demás reglas de escaneo).
+    function elegirModoEscaneoCDVES(tipo) {
+        if (tipo === 'CON_BASE') {
+            let hayBase1001 = false;
+            baseVigenteRF().forEach(b => { if (normRutaRF(b.ruta) === RUTA_FIJA_CDVES) hayBase1001 = true; });
+            if (!hayBase1001) {
+                const aviso = document.getElementById('avisoModoCDVES');
+                aviso.innerHTML = '❌ No hay base de datos cargada para la ruta <b>' + RUTA_FIJA_CDVES + '</b>.<br>Cárgala primero o elige "Sin base de datos".';
+                aviso.style.display = 'block';
+                playBeep(200);
+                return;
+            }
+            cdvesSinBaseActivo = false;
+        } else {
+            cdvesSinBaseActivo = true;
+        }
+        document.getElementById('modalModoCDVES').style.display = 'none';
+        cdvesEleccionConfirmada = true;
+        document.getElementById('chkModoCDVES').checked = true;
+        toggleModoCDVES();
+    }
+
     function toggleModoCDVES() {
         const activando = document.getElementById('chkModoCDVES').checked;
+
+        // Al activar, primero se pregunta si se escaneará con o sin base de datos.
+        if (activando && !cdvesEleccionConfirmada) {
+            document.getElementById('chkModoCDVES').checked = false;
+            abrirModalModoCDVES();
+            return;
+        }
+        if (!activando) {
+            cdvesEleccionConfirmada = false;
+            cdvesSinBaseActivo = false;
+        }
 
         if (activando) {
             const rollIngresado = prompt('Ingresa la ZONA DE ENCAJE DEL ROLL para esta sesión de Escaneos CD VES:\n(Se guardará con cada escaneo. Si detecta un cambio de PL, te preguntará si esta zona también cambió.)');
             if (!rollIngresado || !rollIngresado.trim()) {
                 document.getElementById('chkModoCDVES').checked = false;
+                cdvesEleccionConfirmada = false;
+                cdvesSinBaseActivo = false;
                 return;
             }
             rollActivoCDVES = rollIngresado.trim().toUpperCase();
@@ -2158,9 +2225,9 @@
 
             itemsOcultarCDVES.forEach(el => el.style.display = "none");
             if (bloqueRoll) bloqueRoll.style.display = "flex";
-            if (dispRollEl) dispRollEl.textContent = rollActivoCDVES || "-";
+            if (dispRollEl) dispRollEl.textContent = (rollActivoCDVES || "-") + (cdvesSinBaseActivo ? " · SIN BASE" : "");
 
-            inp.placeholder = "🏭 ESCANEAR CD VES...";
+            inp.placeholder = cdvesSinBaseActivo ? "🏭 ESCANEAR CD VES (SIN BASE)..." : "🏭 ESCANEAR CD VES...";
             actualizarUIRutaLocal();
         } else {
             inpUbic.removeAttribute('readonly');
@@ -3399,8 +3466,9 @@
 
     function continuarValidarRutaConCoincidencia(val, coincidenciaLocal, rutaActualTarget, zonaActivaTarget, forzarActivo) {
         const inp = document.getElementById('inpScan');
+        const cdvesSinBase = modoCDVESActivo && cdvesSinBaseActivo;
 
-        if (!coincidenciaLocal && !forzarActivo) {
+        if (!coincidenciaLocal && !forzarActivo && !cdvesSinBase) {
             mostrarModalRutaAlert('error', '❌ NO REGISTRADO', `El folio <b>${val}</b> no está mapeado en la base de datos de rutas.`, 4000);
             inp.value = ''; inp.focus();
             return;
@@ -3444,7 +3512,7 @@
         const nuevoRegistroRuta = {
             guia: val,
             dia: coincidenciaLocal ? coincidenciaLocal.dia : "S/P",
-            ruta: coincidenciaLocal ? coincidenciaLocal.ruta : "FORZADO",
+            ruta: coincidenciaLocal ? coincidenciaLocal.ruta : (cdvesSinBase ? RUTA_FIJA_CDVES : "FORZADO"),
             sec: coincidenciaLocal ? coincidenciaLocal.secuencia : "S/S",
             bul: parseInt(document.getElementById('inpBultos').value) || 1,
             ubic: rutaActualTarget,
@@ -3452,7 +3520,7 @@
             zonaEsperada: zonaEsperada || null,
             cat: document.getElementById('inpCat').value.toUpperCase() || "-",
             hora: obtenerFechaYHoraActual(),
-            forzado: forzarActivo || (!coincidenciaLocal) || (normRutaRF(coincidenciaLocal.ruta) !== rutaActualTarget) || (hayZonaEsperadaValida && zonaEsperada !== String(zonaActivaTarget).toUpperCase()),
+            forzado: forzarActivo || (!coincidenciaLocal && !cdvesSinBase) || (!!coincidenciaLocal && normRutaRF(coincidenciaLocal.ruta) !== rutaActualTarget) || (hayZonaEsperadaValida && zonaEsperada !== String(zonaActivaTarget).toUpperCase()),
             usuario: usuarioActivo,
             modo: "VALIDAR_RUTA"
         };
@@ -3463,6 +3531,7 @@
         if (modoCDVESActivo) {
             nuevoRegistroRuta.roll = rollActivoCDVES || "-";
             nuevoRegistroRuta.esCDVES = true;
+            if (cdvesSinBase) nuevoRegistroRuta.sinBase = true;
         }
 
         document.getElementById('dispDia').textContent = nuevoRegistroRuta.dia;
@@ -3674,7 +3743,8 @@
                 return;
             }
 
-            const coincidenciasLocal = coincidenciasVigentesRF(val, rutaActualTarget);
+            // CD VES sin base de datos: no se busca coincidencia en la base.
+            const coincidenciasLocal = (modoCDVESActivo && cdvesSinBaseActivo) ? [] : coincidenciasVigentesRF(val, rutaActualTarget);
 
             if (coincidenciasLocal.length > 1) {
                 inp.value = '';
