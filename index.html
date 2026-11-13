@@ -413,6 +413,7 @@
         .modo-btn { width:100%; padding:16px; margin-bottom:10px; border-radius:var(--radius-md); font-weight:800; font-size:13px; border:2px solid var(--border); background:var(--bg); color:var(--text-main); cursor:pointer; }
         .modo-btn.picking { border-color:var(--primary); color:var(--primary); }
         .modo-btn.repro { border-color:var(--success); color:var(--success); }
+        .modo-btn.sender { border-color:#7c3aed; color:#7c3aed; }
         .btn-toggle-modo { background: var(--header-surface); border:none; color: var(--header-text); padding:5px 8px; border-radius:6px; font-size:10px; font-weight:800; cursor:pointer; }
 
         /* ===== REPROGRAMACIONES: rediseño (header claro, panel de resultado, switch, recientes, menú) ===== */
@@ -481,6 +482,35 @@
         .repro-ubi-aviso.error { color: var(--danger); }
         .etq-tipo-btn { flex:1; padding:9px 4px; font-size:12px; font-weight:800; border:2px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text-muted); }
         .etq-tipo-btn.activo { border-color:var(--print-color); background:var(--print-color); color:#fff; }
+        #senderSideMenu { position:fixed; top:0; left:-270px; width:250px; height:100%; background:var(--card-bg); border-right:1px solid var(--border); z-index:960; transition:left 0.25s ease; padding:16px 12px; box-sizing:border-box; overflow-y:auto; box-shadow:2px 0 12px rgba(0,0,0,0.15); }
+        #senderSideMenu.abierto { left:0; }
+        #senderSideMenuOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:950; }
+        #senderSideMenuOverlay.abierto { display:block; }
+        #senderSideMenu { width: 296px; max-width: 86vw; left: -320px; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+        #senderSideMenu .side-menu-body { flex: 1; overflow-y: auto; }
+        #senderSideMenu .side-menu-item { width: 100%; min-height: 52px; padding: 10px 12px; gap: 12px; display: flex; align-items: center; border-radius: 10px; border: 1px solid var(--border);
+        #senderSideMenu .side-menu-item::after { content: none; }
+        #senderSideMenu .side-menu-item:active { background: var(--bg); }
+        #senderSideMenu .side-menu-item:focus-visible, #senderSideMenu .side-menu-close:focus-visible, #senderSideMenu .btn-salir:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        #senderSideMenu .side-menu-item .ico { width: 20px; height: 20px; color: var(--text-muted); }
+        #senderSideMenu .side-menu-item .chev { margin-left: auto; width: 16px; height: 16px; }
+        /* ===== SENDER: pantalla de escaneo (con / sin base de datos) ===== */
+        #screenSender { display:none; position:fixed; inset:0; z-index:900; background:var(--bg); flex-direction:column; }
+        #screenSender.activo { display:flex; }
+        .sender-modebar { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; margin-bottom:12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); }
+        .sender-modebar .sm-txt { display:flex; flex-direction:column; gap:3px; min-width:0; }
+        .sender-modebar .sm-desc { font-size:11px; font-weight:500; color:var(--text-muted); line-height:1.3; }
+        .sender-pill { display:inline-block; width:fit-content; font-size:10.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; padding:3px 10px; border-radius:999px; color:var(--primary); background:color-mix(in srgb, var(--primary) 12%, transparent); border:1px solid color-mix(in srgb, var(--primary) 35%, transparent); }
+        .sender-pill.sin { color:#7c3aed; background:color-mix(in srgb, #7c3aed 12%, transparent); border-color:color-mix(in srgb, #7c3aed 35%, transparent); }
+        .sender-change { flex-shrink:0; min-height:36px; padding:0 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+        .sender-change:active { background:var(--bg); }
+        .sender-field { display:flex; flex-direction:column; gap:4px; flex:1; min-width:0; }
+        .sender-label { font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+        .sender-field input, .sender-field select { width:100%; box-sizing:border-box; min-height:46px; padding:10px 12px; font-size:14px; font-weight:700; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--bg); color:var(--text-main); outline:none; font-family:inherit; transition:border-color .15s; }
+        .sender-field input[type=text] { text-transform:uppercase; }
+        .sender-field input:focus, .sender-field select:focus { border-color:var(--primary); }
+        .sender-row { display:flex; gap:10px; margin-bottom:12px; }
+        .sender-tipo-aviso { display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:rgba(239,68,68,0.12); color:#ef4444; font-size:12px; font-weight:700; line-height:1.4; }
     </style>
 </head>
 <body>
@@ -558,6 +588,121 @@
         <div id="reproRecientesWrap" style="display:none;">
             <div class="repro-recientes-title">Últimos registros</div>
             <div id="reproRecientes"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL SENDER: elegir escaneo con / sin base de datos -->
+<div id="modalSenderTipo" class="modal modal-blur" style="z-index: 6850;">
+    <div class="modal-content" style="max-width:340px; text-align:center;">
+        <h3 style="margin:0 0 6px; font-size:17px;">Escaneos Sender</h3>
+        <div style="font-size:13px; color:var(--text-muted); font-weight:600; margin-bottom:14px;">¿Cómo quieres escanear?</div>
+        <div id="avisoSenderTipo" class="sender-tipo-aviso"></div>
+        <button class="repro-btn" style="margin-bottom:6px;" onclick="elegirSenderTipo('CON_BASE')">Con base de datos</button>
+        <div style="font-size:11px; color:var(--text-muted); margin:0 0 12px;">Valida contra la carga de la ruta (tienda) y registra en ella</div>
+        <button class="repro-btn" style="margin-bottom:6px; background:#7c3aed;" onclick="elegirSenderTipo('SIN_BASE')">Sin base de datos</button>
+        <div style="font-size:11px; color:var(--text-muted); margin:0 0 12px;">Escaneo general, con todas sus reglas</div>
+        <button class="repro-btn" style="background:var(--text-muted);" onclick="cancelarModalSenderTipo()">Cancelar</button>
+    </div>
+</div>
+
+<!-- MENÚ LATERAL SENDER -->
+<div id="senderSideMenuOverlay" onclick="cerrarMenuLateralSender()"></div>
+<div id="senderSideMenu" role="dialog" aria-label="Opciones de Sender">
+    <div class="side-menu-header">
+        <div>
+            <h4>SENDER</h4>
+            <div class="side-menu-subtitle">Opciones</div>
+        </div>
+        <button class="side-menu-close" onclick="cerrarMenuLateralSender()" aria-label="Cerrar menú"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="side-menu-body">
+        <div class="side-menu-section-title">Escaneo</div>
+        <button class="side-menu-item" onclick="cambiarTipoSender()"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg><span>Cambiar tipo de escaneo</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cerrarMenuLateralSender(); abrirSelectorModo();"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><span>Cambiar de módulo</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+    </div>
+    <div class="side-menu-footer">
+        <div class="side-menu-user">
+            <span class="avatar" id="avatarSender">?</span>
+            <span class="meta"><span class="nm" id="senderMenuUserName">—</span><span class="rl" id="senderMenuUserRole">Operador</span></span>
+        </div>
+        <button class="btn-salir" onclick="cerrarMenuLateralSender(); cerrarPantallaSender(); cerrarSesion();"><svg class="ico" aria-hidden="true"><use href="#i-logout"/></svg><span>Cerrar sesión</span></button>
+        <div class="side-menu-ver">REVERSA · Sender</div>
+    </div>
+</div>
+
+<!-- PANTALLA SENDER -->
+<div id="screenSender">
+    <div class="repro-header">
+        <button class="repro-menu-toggle" onclick="abrirMenuLateralSender()" title="Menú" aria-label="Abrir menú"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
+        <div class="repro-title">
+            <h2>Escaneos Sender</h2>
+            <div class="repro-sub"><b id="tTotalSender">0</b> registros</div>
+        </div>
+        <button class="btn-toggle-modo" onclick="cerrarPantallaSender()" title="Volver" aria-label="Volver"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Volver</span></button>
+    </div>
+    <div class="repro-body">
+        <div class="repro-card">
+            <div class="sender-modebar">
+                <div class="sm-txt">
+                    <span class="sender-pill" id="senderPill">Con base de datos</span>
+                    <span class="sm-desc" id="senderPillDesc">Valida contra la carga de la ruta</span>
+                </div>
+                <button type="button" class="sender-change" onclick="cambiarTipoSender()">Cambiar</button>
+            </div>
+
+            <label class="repro-label repro-scan-label" for="inpScanSender">Código de paquete</label>
+            <input type="text" id="inpScanSender" class="repro-input" placeholder="ESCANEE AQUÍ..." autocomplete="off"
+                onkeydown="if(event.key==='Enter'){procesarEscaneoSender();}">
+
+            <div id="senderLastBox" class="repro-last" role="status" aria-live="polite"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg><span class="rl-txt">Esperando escaneo</span></div>
+
+            <div class="sender-row">
+                <label class="sender-field"><span class="sender-label" id="senderRutaLbl">Ruta (tienda)</span>
+                    <input type="text" id="senderRuta" placeholder="Ej. 1001 / nombre de la tienda" autocomplete="off">
+                </label>
+            </div>
+            <div class="sender-row">
+                <label class="sender-field"><span class="sender-label">Ubicación</span>
+                    <input type="text" id="senderUbic" placeholder="Ubicación" autocomplete="off">
+                </label>
+                <label class="sender-field"><span class="sender-label">Zona</span>
+                    <input type="text" id="senderZona" placeholder="Zona" autocomplete="off">
+                </label>
+            </div>
+            <div class="sender-row">
+                <label class="sender-field" style="flex:0 0 96px;"><span class="sender-label">Bultos</span>
+                    <input type="number" id="senderBultos" value="1" min="1" inputmode="numeric">
+                </label>
+                <label class="sender-field"><span class="sender-label">Opción</span>
+                    <select id="senderCat" onchange="onSenderCatChange(this)">
+                        <option value="-">SIN OPCIÓN</option>
+                        <option value="MINI">MINI</option>
+                        <option value="INVENTARIADO">INVENTARIADO</option>
+                        <option value="MULTIFOLIO">MULTIFOLIO</option>
+                        <option value="REZAGOS">REZAGOS</option>
+                        <option value="EXTRAIDO">EXTRAIDO</option>
+                        <option value="RUTEO IL">RUTEO IL</option>
+                        <option value="RUTEO IL (MULTIFOLIOS)">RUTEO IL (MULTIFOLIOS)</option>
+                        <option value="OTRO">OTRO...</option>
+                    </select>
+                </label>
+            </div>
+
+            <label class="repro-switch-row">
+                <span class="rs-text"><span class="rs-name">Permitir forzado</span><span class="rs-desc">Registra aunque no coincida con la base, la ruta o la zona</span></span>
+                <span class="side-switch">
+                    <input type="checkbox" role="switch" id="chkForzadoSender" aria-label="Permitir forzado">
+                    <span class="slider"></span>
+                </span>
+            </label>
+            <button class="repro-btn" onclick="procesarEscaneoSender()"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span>Registrar</span></button>
+        </div>
+
+        <div id="senderRecientesWrap" style="display:none;">
+            <div class="repro-recientes-title">Últimos registros</div>
+            <div id="senderRecientes"></div>
         </div>
     </div>
 </div>
@@ -825,6 +970,7 @@
         <h3 style="font-weight:900; color:var(--primary); margin-bottom:14px;">SELECCIONAR MÓDULO</h3>
         <button class="modo-btn picking" onclick="elegirModoOperativo('picking')">📦 RUTEO DINÁMICO IL</button>
         <button class="modo-btn repro" onclick="elegirModoOperativo('repro')">🔄 REPROGRAMACIONES</button>
+        <button class="modo-btn sender" onclick="senderTipoConfirmado=false; elegirModoOperativo('sender')">📤 SENDER</button>
     </div>
 </div>
 
@@ -869,6 +1015,7 @@
     <div class="side-menu-body">
         <div class="side-menu-section-title">Módulo</div>
         <button class="side-menu-item" onclick="cerrarMenuLateral(); abrirSelectorModo();"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg><span>Repros</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cerrarMenuLateral(); senderTipoConfirmado=false; elegirModoOperativo('sender');"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg><span>Sender</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
 
         <div class="side-menu-section-title">Modo de escaneo</div>
         <div class="side-menu-section-hint">Solo un modo activo a la vez; al activar uno se apagan los demás.</div>
@@ -4784,6 +4931,12 @@
         };
         if (marca) { nuevo.guiaOriginal = guia; nuevo.marca = marca; }
         if (liquidada) nuevo.liquidada = true;
+        if (modoOperativo === 'sender') {
+            nuevo.sender = true;
+            nuevo.senderModo = 'SIN_BASE';
+            const tiendaTxt = (document.getElementById('senderRuta').value || '').toUpperCase().trim();
+            if (tiendaTxt) nuevo.tienda = tiendaTxt;
+        }
 
         rtdb.ref("escaneos_compartidos").push(nuevo).then(() => {
             playBeep(800);
@@ -4835,6 +4988,7 @@
         // mantiene vivo el contador del encabezado (badge "INV IL N").
         document.getElementById('tTotal').textContent = scans.length;
         actualizarPanelUltimosPL();
+        try { actualizarSenderUI(); } catch (e) {}
     }
 
     // Recorre los escaneos del operario activo, en la jornada actual, y arma
@@ -5665,21 +5819,357 @@
     }
 
     function elegirModoOperativo(modo) {
+        // Sender: antes de entrar se pregunta si se escaneará con o sin base de datos.
+        if (modo === 'sender' && !senderTipoConfirmado) {
+            document.getElementById('modalElegirModo').style.display = 'none';
+            abrirModalSenderTipo();
+            return;
+        }
+        if (modo !== 'sender') { senderTipoConfirmado = false; senderRestaurarForzar(); }
         modoOperativo = modo;
         modoYaElegidoSesion = true;
         document.getElementById('modalElegirModo').style.display = 'none';
         const screenRepro = document.getElementById('screenRepro');
+        const screenSender = document.getElementById('screenSender');
+        if (screenSender) screenSender.classList.toggle('activo', modo === 'sender');
         if (modo === 'repro') {
             screenRepro.classList.add('activo');
             const inp = document.getElementById('inpScanRepro');
             if (inp) setTimeout(() => inp.focus(), 150);
             renderResumenRutasRepro();
+        } else if (modo === 'sender') {
+            screenRepro.classList.remove('activo');
+            activarPantallaSender();
         } else {
             screenRepro.classList.remove('activo');
             const inp = document.getElementById('inpScan');
             if (inp) setTimeout(() => inp.focus(), 150);
         }
     }
+
+
+    // =====================================================================
+    // MÓDULO SENDER
+    // CON BASE: valida contra la carga de la ruta (tienda) y registra en ella
+    //           (mismo registro "VALIDAR_RUTA" que ya usa el avance por ruta).
+    // SIN BASE: escaneo general con todas sus reglas (base central, duplicados,
+    //           casos especiales, liquidación) usando los datos de este panel.
+    // Todo registro queda marcado con sender:true para verlo aparte en index.html.
+    // =====================================================================
+    let senderTipo = 'CON_BASE';
+    let senderTipoConfirmado = false;
+    let senderForzarPrevio = null;
+
+    function senderEsc(v) {
+        return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+
+    function abrirModalSenderTipo() {
+        const aviso = document.getElementById('avisoSenderTipo');
+        aviso.style.display = 'none';
+        aviso.innerHTML = '';
+        document.getElementById('modalSenderTipo').style.display = 'flex';
+    }
+
+    function cancelarModalSenderTipo() {
+        document.getElementById('modalSenderTipo').style.display = 'none';
+        if (modoOperativo !== 'sender') abrirSelectorModo();
+    }
+
+    function elegirSenderTipo(tipo) {
+        if (tipo === 'CON_BASE' && baseDatosRutaNube.length === 0) {
+            const aviso = document.getElementById('avisoSenderTipo');
+            aviso.innerHTML = '❌ No hay base de datos de ruta cargada.<br>Cárgala primero o elige "Sin base de datos".';
+            aviso.style.display = 'block';
+            playBeep(200);
+            return;
+        }
+        senderTipo = tipo;
+        senderTipoConfirmado = true;
+        document.getElementById('modalSenderTipo').style.display = 'none';
+        elegirModoOperativo('sender');
+    }
+
+    function cambiarTipoSender() {
+        cerrarMenuLateralSender();
+        senderTipoConfirmado = false;
+        abrirModalSenderTipo();
+    }
+
+    function cerrarPantallaSender() { elegirModoOperativo('picking'); }
+
+    function abrirMenuLateralSender() {
+        document.getElementById('senderSideMenu').classList.add('abierto');
+        document.getElementById('senderSideMenuOverlay').classList.add('abierto');
+    }
+    function cerrarMenuLateralSender() {
+        document.getElementById('senderSideMenu').classList.remove('abierto');
+        document.getElementById('senderSideMenuOverlay').classList.remove('abierto');
+    }
+
+    function senderRestaurarForzar() {
+        if (senderForzarPrevio !== null) {
+            document.getElementById('chkModoForzar').checked = senderForzarPrevio;
+            senderForzarPrevio = null;
+        }
+    }
+
+    function activarPantallaSender() {
+        const con = senderTipo === 'CON_BASE';
+        const pill = document.getElementById('senderPill');
+        pill.textContent = con ? 'Con base de datos' : 'Sin base de datos';
+        pill.classList.toggle('sin', !con);
+        document.getElementById('senderPillDesc').textContent = con
+            ? 'Valida contra la carga de la ruta (tienda)'
+            : 'Escaneo general, con todas sus reglas';
+        document.getElementById('senderRutaLbl').textContent = con ? 'Ruta (tienda) *' : 'Ruta (tienda) · opcional';
+        const u = (document.getElementById('displayUser') || {}).textContent || '';
+        const ini = (u.replace('@', '').trim()[0] || '?').toUpperCase();
+        document.getElementById('avatarSender').textContent = ini;
+        document.getElementById('senderMenuUserName').textContent = (u && u !== '@?') ? u : '—';
+        try { document.getElementById('senderMenuUserRole').textContent = esAdmin() ? 'Administrador' : 'Operador'; } catch (e) {}
+        actualizarSenderUI();
+        const inp = document.getElementById(con && !document.getElementById('senderRuta').value.trim() ? 'senderRuta' : 'inpScanSender');
+        setTimeout(() => inp.focus(), 150);
+    }
+
+    function senderEstado(texto, estado) {
+        const box = document.getElementById('senderLastBox');
+        if (!box) return;
+        const icono = estado === 'error' ? 'xc' : (estado === 'warn' ? 'warn' : 'okc');
+        box.className = 'repro-last estado-' + estado;
+        box.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-' + icono + '"/></svg><span class="rl-txt"></span>';
+        box.querySelector('.rl-txt').textContent = String(texto || '').replace(/^[^\p{L}\p{N}]+/u, '');
+        if (estado !== 'ok' && navigator.vibrate) { try { navigator.vibrate(estado === 'error' ? [120, 60, 120] : 80); } catch (e) {} }
+    }
+
+    function senderAsegurarOpcion(sel, valor) {
+        if (!valor || valor === '-') return;
+        if (!Array.from(sel.options).some(o => o.value === valor)) {
+            const op = document.createElement('option');
+            op.value = valor; op.textContent = valor; op.className = 'opt-custom';
+            sel.insertBefore(op, sel.querySelector('option[value="OTRO"]') || null);
+        }
+    }
+
+    function onSenderCatChange(sel) {
+        if (sel.value !== 'OTRO') return;
+        const txt = prompt('Escribe el nombre de la opción personalizada:');
+        if (txt && txt.trim()) {
+            const limpio = txt.trim().toUpperCase();
+            senderAsegurarOpcion(sel, limpio);
+            sel.value = limpio;
+        } else {
+            sel.value = '-';
+        }
+    }
+
+    function senderValores() {
+        return {
+            ruta: normRutaRF(document.getElementById('senderRuta').value),
+            ubic: document.getElementById('senderUbic').value.toUpperCase().trim(),
+            zona: document.getElementById('senderZona').value.toUpperCase().trim(),
+            bul: parseInt(document.getElementById('senderBultos').value) || 1,
+            cat: document.getElementById('senderCat').value.toUpperCase(),
+            forzado: document.getElementById('chkForzadoSender').checked
+        };
+    }
+
+    function procesarEscaneoSender() {
+        const inp = document.getElementById('inpScanSender');
+        const raw = inp.value;
+        if (!raw.trim()) { inp.value = ''; inp.focus(); return; }
+        if (!validarRastreo(raw)) {
+            senderEstado('❌ ' + limpiarCodigo(raw) + ' — código no reconocido', 'error');
+            playBeep(200);
+            inp.value = ''; inp.focus();
+            return;
+        }
+        const val = limpiarCodigo(raw);
+        inp.value = '';
+        const v = senderValores();
+        if (senderTipo === 'CON_BASE') senderConBase(val, v); else senderSinBase(val, v);
+        inp.focus();
+    }
+
+    // ---------- CON BASE: valida contra la carga de la ruta ----------
+    function senderConBase(val, v) {
+        if (!v.ruta) {
+            senderEstado('❌ Indica la Ruta (tienda) antes de escanear', 'error');
+            playBeep(200);
+            document.getElementById('senderRuta').focus();
+            return;
+        }
+        if (!v.forzado && !baseDatosRutaNube.some(b => normRutaRF(b.ruta) === v.ruta)) {
+            mostrarModalRutaAlert('error', '❌ SIN BASE PARA LA RUTA', `No hay carga de base de datos para la ruta <b>${senderEsc(v.ruta)}</b>.`, 4000);
+            playBeep(200);
+            return;
+        }
+
+        const jornada = obtenerJornadaLogica(new Date());
+
+        if (v.zona.startsWith('PL')) {
+            const zonaOcupada = scans.find(e =>
+                e.zona === v.zona &&
+                (e.tienda || e.ubic) !== v.ruta &&
+                !(e.cat && e.cat.startsWith('IMPRESO')) &&
+                e.hora && obtenerJornadaLogica(parsearHoraAObj(e.hora)) === jornada
+            );
+            if (zonaOcupada) {
+                mostrarModalRutaAlert('error', '❌ ZONA OCUPADA', `La zona <b>${senderEsc(v.zona)}</b> ya está registrada en la ruta <b>${senderEsc(zonaOcupada.tienda || zonaOcupada.ubic)}</b>.`, 5000);
+                playBeep(200);
+                return;
+            }
+        }
+
+        const dup = scans.find(e => (e.guia === val || e.guiaOriginal === val) && !(e.cat && e.cat.startsWith('IMPRESO')) &&
+            e.hora && obtenerJornadaLogica(parsearHoraAObj(e.hora)) === jornada);
+        if (dup) {
+            abrirModalDup(dup, { dia: dup.dia, ruta: dup.ruta, sec: dup.sec });
+            playBeep(200);
+            return;
+        }
+
+        const coincidencias = coincidenciasVigentesRF(val, v.ruta);
+        if (coincidencias.length > 1) {
+            const candidatos = coincidencias.map(b => ({ guia: val, dia: b.dia, ruta: b.ruta, sec: b.secuencia }));
+            abrirModalSeleccionRuta(candidatos, (elegido) => {
+                const b = coincidencias.find(x => x.dia === elegido.dia && x.ruta === elegido.ruta && x.secuencia === elegido.sec) || coincidencias[0];
+                continuarSenderConBase(val, b, v);
+            });
+            return;
+        }
+        continuarSenderConBase(val, coincidencias[0] || null, v);
+    }
+
+    function continuarSenderConBase(val, coin, v) {
+        if (!coin && !v.forzado) {
+            mostrarModalRutaAlert('error', '❌ NO REGISTRADO', `El folio <b>${senderEsc(val)}</b> no está mapeado en la base de datos de rutas.`, 4000);
+            senderEstado('❌ ' + val + ' — no está en la base', 'error');
+            playBeep(200);
+            return;
+        }
+        if (coin && normRutaRF(coin.ruta) !== v.ruta && !v.forzado) {
+            mostrarModalRutaAlert('warning', '⚠️ RUTA INCORRECTA', `
+                El folio ingresado no pertenece a la ruta activa.
+                <div class="alert-details">
+                    <div><b>Ruta Asignada:</b> <span>🚚 ${senderEsc(coin.ruta)}</span></div>
+                    <div><b>Día Asignado:</b> <span>📅 ${senderEsc(coin.dia)}</span></div>
+                    <div><b>Secuencia:</b> <span>🔢 ${senderEsc(coin.secuencia)}</span></div>
+                </div>`, 4000);
+            senderEstado('⚠️ ' + val + ' — pertenece a la ruta ' + coin.ruta, 'warn');
+            playBeep(200);
+            return;
+        }
+        // La zona solo se exige cuando el operario escribió una y la base define otra.
+        const zonaEsperada = coin && coin.zona ? String(coin.zona).toUpperCase() : null;
+        const hayZonaEsperada = !!zonaEsperada && zonaEsperada !== 'SIN ZONA';
+        const zonaNoCoincide = hayZonaEsperada && !!v.zona && zonaEsperada !== v.zona;
+        if (zonaNoCoincide && !v.forzado) {
+            mostrarModalRutaAlert('warning', '⚠️ ZONA INCORRECTA', `
+                El folio ingresado no pertenece a la zona activa.
+                <div class="alert-details">
+                    <div><b>Ruta Asignada:</b> <span>🚚 ${senderEsc(coin.ruta)}</span></div>
+                    <div><b>Zona Esperada:</b> <span>📍 ${senderEsc(zonaEsperada)}</span></div>
+                    <div><b>Zona Actual:</b> <span>⚠️ ${senderEsc(v.zona)}</span></div>
+                </div>`, 4000);
+            senderEstado('⚠️ ' + val + ' — zona esperada ' + zonaEsperada, 'warn');
+            playBeep(200);
+            return;
+        }
+
+        const forzadoFinal = v.forzado || !coin || (coin && normRutaRF(coin.ruta) !== v.ruta) || zonaNoCoincide;
+        const reg = {
+            guia: val,
+            dia: coin ? coin.dia : 'S/P',
+            ruta: coin ? coin.ruta : 'FORZADO',
+            sec: coin ? coin.secuencia : 'S/S',
+            bul: v.bul,
+            ubic: v.ubic || v.ruta,
+            zona: v.zona || 'SIN ZONA',
+            zonaEsperada: zonaEsperada || null,
+            cat: (v.cat && v.cat !== '-') ? v.cat : 'RUTEO IL',
+            hora: obtenerFechaYHoraActual(),
+            forzado: !!forzadoFinal,
+            usuario: usuarioActivo,
+            modo: 'VALIDAR_RUTA',
+            sender: true,
+            senderModo: 'CON_BASE',
+            tienda: v.ruta
+        };
+
+        rtdb.ref('escaneos_compartidos').push(reg).then(() => {
+            emitirSonidoCoincidenciaRuta();
+            senderEstado('✅ ' + val + ' — registrado en ruta ' + reg.ruta, 'ok');
+            mostrarModalRutaAlert('success', '✅ REGISTRADO', `Folio <b>${senderEsc(val)}</b> verificado en ruta.`, 1500);
+            document.getElementById('inpScanSender').focus();
+        });
+    }
+
+    // ---------- SIN BASE: escaneo general con todas sus reglas ----------
+    function senderSinBase(val, v) {
+        // El escaneo general lee sus propios campos: se cargan con los datos de este panel.
+        const selMain = document.getElementById('inpCat');
+        senderAsegurarOpcion(selMain, v.cat);
+        document.getElementById('inpUbic').value = v.ubic;
+        document.getElementById('inpZona').value = v.zona;
+        document.getElementById('inpBultos').value = v.bul;
+        selMain.value = (v.cat && v.cat !== '-') ? v.cat : '-';
+        const chkF = document.getElementById('chkModoForzar');
+        if (senderForzarPrevio === null) senderForzarPrevio = chkF.checked;
+        chkF.checked = v.forzado;
+
+        // Regla visual de PL: solo se visualiza, no se registra
+        if (val.startsWith('PL')) {
+            const encontradoPL = db.find(i => limpiarTexto(buscarColumna(i, ['GUIA', 'SEGUIMIENTO', 'TRACKING'])) === val);
+            senderEstado('👁️ ' + val + ' — visualizado (PL)' + (encontradoPL ? ' · ruta ' + (buscarColumna(encontradoPL, ['RUTA']) || '-') : ''), 'warn');
+            return;
+        }
+
+        const coincidencias = db.filter(i => limpiarTexto(buscarColumna(i, ['GUIA', 'SEGUIMIENTO', 'TRACKING'])) === val);
+        if (coincidencias.length > 1) {
+            const candidatos = coincidencias.map(i => ({
+                guia: val,
+                dia: buscarColumna(i, ['DIA']),
+                ruta: buscarColumna(i, ['RUTA']),
+                sec: buscarColumna(i, ['SECUENCIA', 'SEC']),
+                _raw: i
+            }));
+            abrirModalSeleccionRuta(candidatos, (elegido) => continuarEscaneoNormalConCoincidencia(val, elegido._raw));
+            return;
+        }
+        continuarEscaneoNormalConCoincidencia(val, coincidencias[0] || null);
+    }
+
+    // ---------- Panel: total y últimos registros ----------
+    function actualizarSenderUI() {
+        const lista = scans.filter(s => s && s.sender);
+        const t = document.getElementById('tTotalSender');
+        if (t) t.textContent = lista.length;
+        const wrap = document.getElementById('senderRecientesWrap');
+        const cont = document.getElementById('senderRecientes');
+        if (!wrap || !cont) return;
+        const jornada = obtenerJornadaLogica(new Date());
+        const mios = lista.filter(s => s.usuario === usuarioActivo && s.hora && obtenerJornadaLogica(parsearHoraAObj(s.hora)) === jornada).slice(0, 6);
+        if (!mios.length) { wrap.style.display = 'none'; cont.innerHTML = ''; return; }
+        wrap.style.display = 'block';
+        cont.innerHTML = mios.map(s => {
+            const hora = String(s.hora || '').split(' - ')[1] || '';
+            const meta = [s.tienda || s.ruta, s.ubic, s.zona].filter(x => x && x !== '-').map(senderEsc).join(' · ');
+            const tag = s.forzado ? '<span class="rr-tag warn">FORZADO</span>' : '<span class="rr-tag">' + (s.senderModo === 'SIN_BASE' ? 'SIN BASE' : 'CON BASE') + '</span>';
+            return '<div class="rr-item"><div class="rr-main"><span class="rr-cod">' + senderEsc(s.guia) + '</span><span class="rr-meta">' + (meta || '—') + '</span></div>' +
+                   '<div class="rr-side">' + tag + '<span class="rr-hora">' + senderEsc(hora) + '</span></div></div>';
+        }).join('');
+    }
+
+    // El escáner puede devolver el foco al campo del escaneo general (tras cerrar un modal):
+    // en Sender se redirige al campo de Sender.
+    document.addEventListener('focusin', (e) => {
+        if (modoOperativo === 'sender' && e.target && e.target.id === 'inpScan') {
+            const s = document.getElementById('inpScanSender');
+            if (s) setTimeout(() => s.focus(), 0);
+        }
+    });
 
     function cerrarPantallaRepro() {
         elegirModoOperativo('picking');
