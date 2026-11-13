@@ -729,7 +729,7 @@
 
             <div id="senderLastBox" class="repro-last" role="status" aria-live="polite"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg><span class="rl-txt">Esperando escaneo</span></div>
 
-            <div class="sender-row">
+            <div class="sender-row" id="senderRowRuta">
                 <label class="sender-field"><span class="sender-label" id="senderRutaLbl">Ruta (tienda)</span>
                     <input type="text" id="senderRuta" placeholder="Ej. 1001 / nombre de la tienda" autocomplete="off" list="senderRutasList" oninput="actualizarSenderUI()" onchange="actualizarSenderUI()">
                     <datalist id="senderRutasList"></datalist>
@@ -745,7 +745,7 @@
                 </div>
                 <div class="sp-aviso" id="spAviso"></div>
             </div>
-            <div class="sender-row">
+            <div class="sender-row" id="senderRowUbic">
                 <label class="sender-field"><span class="sender-label">Ubicación</span>
                     <input type="text" id="senderUbic" placeholder="Ubicación" autocomplete="off">
                 </label>
@@ -753,7 +753,7 @@
                     <input type="text" id="senderZona" placeholder="Zona" autocomplete="off">
                 </label>
             </div>
-            <div class="sender-row">
+            <div class="sender-row" id="senderRowBultos">
                 <label class="sender-field" style="flex:0 0 96px;"><span class="sender-label">Bultos</span>
                     <input type="number" id="senderBultos" value="1" min="1" inputmode="numeric">
                 </label>
@@ -771,6 +771,13 @@
                 </label>
             </div>
 
+            <label class="repro-switch-row" id="senderImprimirRow">
+                <span class="rs-text"><span class="rs-name">Imprimir etiqueta</span><span class="rs-desc">Imprime día, secuencia, ruta y código de barras según la base de la ruta</span></span>
+                <span class="side-switch">
+                    <input type="checkbox" role="switch" id="chkImprimirEtiquetaSender" aria-label="Imprimir etiqueta" onchange="senderRefrescarCamposEtiqueta(); actualizarSenderUI(); document.getElementById('inpScanSender').focus();">
+                    <span class="slider"></span>
+                </span>
+            </label>
             <label class="repro-switch-row">
                 <span class="rs-text"><span class="rs-name">Permitir forzado</span><span class="rs-desc">Registra aunque no coincida con la base, la ruta o la zona</span></span>
                 <span class="side-switch">
@@ -6087,6 +6094,24 @@
         senderRestaurarGeneral();
     }
 
+    // true cuando el check "Imprimir etiqueta" está activo (solo existe con base de datos).
+    function senderEtiquetaActiva() {
+        const c = document.getElementById('chkImprimirEtiquetaSender');
+        return !!(c && c.checked && senderTipo === 'CON_BASE');
+    }
+
+    // Con "Imprimir etiqueta" activo se ocultan Ruta, Ubicación, Zona, Bultos y Opción:
+    // la etiqueta sale solo con los datos de la base de ruta.
+    function senderRefrescarCamposEtiqueta() {
+        const con = senderTipo === 'CON_BASE';
+        const etq = senderEtiquetaActiva();
+        const mostrar = (id, ver) => { const el = document.getElementById(id); if (el) el.style.display = ver ? '' : 'none'; };
+        mostrar('senderRowRuta', con && !etq);
+        mostrar('senderRowUbic', !etq);
+        mostrar('senderRowBultos', !etq);
+        mostrar('senderOtroRow', !etq); // al mostrarse vuelve a regirse por su clase (solo si eligen "OTROS")
+    }
+
     function senderRefrescarTipoUI() {
         const con = senderTipo === 'CON_BASE';
         const txt = con ? 'Con base de datos' : 'Sin base de datos';
@@ -6103,13 +6128,18 @@
         const rutaRow = document.getElementById('senderRuta').closest('.sender-row');
         if (rutaRow) rutaRow.style.display = con ? '' : 'none';
         if (!con) document.getElementById('senderRuta').value = '';
+        // La etiqueta de Sender se arma con los datos de la base de ruta: solo existe con base de datos.
+        const impRow = document.getElementById('senderImprimirRow');
+        if (impRow) impRow.style.display = con ? '' : 'none';
+        if (!con) { const chkImp = document.getElementById('chkImprimirEtiquetaSender'); if (chkImp) chkImp.checked = false; }
+        senderRefrescarCamposEtiqueta();
         const u = (document.getElementById('displayUser') || {}).textContent || '';
         const ini = (u.replace('@', '').trim()[0] || '?').toUpperCase();
         document.getElementById('avatarSender').textContent = ini;
         document.getElementById('senderMenuUserName').textContent = (u && u !== '@?') ? u : '—';
         try { document.getElementById('senderMenuUserRole').textContent = esAdmin() ? 'Administrador' : 'Operador'; } catch (e) {}
         actualizarSenderUI();
-        const inp = document.getElementById(con && !document.getElementById('senderRuta').value.trim() ? 'senderRuta' : 'inpScanSender');
+        const inp = document.getElementById(con && !senderEtiquetaActiva() && !document.getElementById('senderRuta').value.trim() ? 'senderRuta' : 'inpScanSender');
         setTimeout(() => inp.focus(), 150);
     }
 
@@ -6151,6 +6181,17 @@
     }
 
     function senderValores() {
+        if (senderEtiquetaActiva()) {
+            // Campos ocultos: no se usan (aunque conserven un valor anterior).
+            return {
+                ruta: '',
+                ubic: '',
+                zona: '',
+                bul: 1,
+                cat: 'SENDER INV',
+                forzado: document.getElementById('chkForzadoSender').checked
+            };
+        }
         return {
             ruta: normRutaRF(document.getElementById('senderRuta').value),
             ubic: document.getElementById('senderUbic').value.toUpperCase().trim(),
@@ -6188,9 +6229,24 @@
                 v.ruta = Array.from(rutasFolio)[0];
                 document.getElementById('senderRuta').value = v.ruta;
                 actualizarSenderUI();
+            } else if (rutasFolio.size > 1 && senderEtiquetaActiva()) {
+                // El folio está en varias rutas: se elige cuál, como en el resto del módulo.
+                const candidatos = c.map(b => ({ guia: val, dia: b.dia, ruta: b.ruta, sec: b.secuencia }));
+                abrirModalSeleccionRuta(candidatos, (elegido) => {
+                    v.ruta = normRutaRF(elegido.ruta);
+                    senderConBase(val, v);
+                });
+                return;
             }
         }
-        if (!v.ruta) {
+        if (!v.ruta && senderEtiquetaActiva()) {
+            if (!v.forzado) {
+                mostrarModalRutaAlert('error', '❌ NO REGISTRADO', `El folio <b>${senderEsc(val)}</b> no está mapeado en la base de datos de rutas.`, 4000);
+                senderEstado('❌ ' + val + ' — no está en la base', 'error');
+                playBeep(200);
+                return;
+            }
+        } else if (!v.ruta) {
             senderEstado('❌ Indica la Ruta (tienda) antes de escanear', 'error');
             playBeep(200);
             document.getElementById('senderRuta').focus();
@@ -6297,8 +6353,72 @@
         rtdb.ref('escaneos_sender').push(reg).then(() => {
             emitirSonidoCoincidenciaRuta();
             senderPostRegistro(reg, coin);
+            senderImprimirEtiqueta(val, coin);
             document.getElementById('inpScanSender').focus();
         });
+    }
+
+    // ---------- ETIQUETA SENDER (modelo único) ----------
+    // Diseño: DÍA arriba a la izquierda, SECUENCIA arriba a la derecha, RUTA grande y centrada,
+    // fecha debajo y código de barras (Code 128) del seguimiento con su número impreso.
+    function senderFechaEtiqueta() {
+        const d = new Date();
+        const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+        return String(d.getDate()).padStart(2, '0') + '-' + meses[d.getMonth()] + '-' + String(d.getFullYear()).slice(-2);
+    }
+
+    function generarZPLEtiquetaSender(dia, secuencia, ruta, fechaStr, seguimiento) {
+        const anchoMM = parseFloat(localStorage.getItem('labelWidthMM')) || 50;
+        const altoMM = parseFloat(localStorage.getItem('labelHeightMM')) || 50;
+        const W = mmADots(anchoMM);
+        const H = mmADots(altoMM);
+        const margen = Math.max(6, Math.round(Math.min(W, H) * 0.03));
+        const anchoInterior = W - margen * 2;
+        const mitad = Math.floor(anchoInterior / 2);
+
+        const diaTxt = String(dia || 'S/D');
+        const secTxt = String(secuencia || 'S/S');
+        const rutaTxt = String(ruta || '');
+        const segTxt = String(seguimiento || '');
+
+        const fDia = ajustarFuenteAAncho(diaTxt, Math.round(H * 0.15), mitad, 18);
+        const fSec = ajustarFuenteAAncho(secTxt, Math.round(H * 0.15), mitad, 18);
+        const fRuta = ajustarFuenteAAncho(rutaTxt, Math.round(H * 0.13), anchoInterior, 14);
+        const fFecha = ajustarFuenteAAncho(fechaStr, Math.round(H * 0.09), anchoInterior, 12);
+
+        const yTop = margen;
+        const yRuta = Math.round(H * 0.24);
+        const yFecha = Math.round(H * 0.42);
+        const yBarras = Math.round(H * 0.54);
+        const altoBarras = Math.round(H * 0.28);
+
+        const modulos = estimarModulosCode128(segTxt);
+        const w = Math.max(1, Math.min(4, Math.floor(anchoInterior / (modulos * 1.04))));
+        const anchoBarras = Math.min(anchoInterior, modulos * w);
+        const xBarras = margen + Math.max(0, Math.floor((anchoInterior - anchoBarras) / 2));
+
+        return `
+^XA
+^CI28
+^PW${W}
+^LL${H}
+^FO${margen},${yTop}^A0N,${fDia},${fDia}^FB${mitad},1,0,L^FD${diaTxt}^FS
+^FO${margen + mitad},${yTop}^A0N,${fSec},${fSec}^FB${mitad},1,0,R^FD${secTxt}^FS
+^FO${margen},${yRuta}^A0N,${fRuta},${fRuta}^FB${anchoInterior},1,0,C^FD${rutaTxt}^FS
+^FO${margen},${yFecha}^A0N,${fFecha},${fFecha}^FB${anchoInterior},1,0,C^FD${fechaStr}^FS
+^BY${w},3,${altoBarras}
+^FO${xBarras},${yBarras}^BCN,${altoBarras},Y,N,N,A^FD${segTxt}^FS
+^XZ
+`.trim();
+    }
+
+    // Imprime solo si el check está activo y el folio salió de la base de ruta (usa sus datos).
+    function senderImprimirEtiqueta(val, coin) {
+        const chk = document.getElementById('chkImprimirEtiquetaSender');
+        if (!chk || !chk.checked) return;
+        if (!coin) { senderEstado('⚠️ ' + val + ' — sin datos en la base, no se imprime etiqueta', 'warn'); return; }
+        const zpl = generarZPLEtiquetaSender(coin.dia, coin.secuencia, coin.ruta, senderFechaEtiqueta(), val);
+        enviarZPLaImpresora(zpl);
     }
 
     // ---------- SIN BASE: escaneo general con todas sus reglas ----------
@@ -6542,6 +6662,9 @@
         const ruta = normRutaRF(inpRuta.value);
         const reg = senderRegistrosJornada();
         const delRuta = ruta ? reg.filter(s => normRutaRF(s.tienda || s.ruta) === ruta) : reg;
+        // Con "Imprimir etiqueta" activo se ocultan el progreso de la ruta y el resumen por ubicación.
+        const chkEtq = document.getElementById('chkImprimirEtiquetaSender');
+        const ocultarPaneles = !!(chkEtq && chkEtq.checked);
         if (!senderBoxTocado) {
             const mio = reg.find(s => s.usuario === usuarioActivo);
             if (mio) { senderMostrarUltimo(mio); senderBoxTocado = false; }
@@ -6550,7 +6673,7 @@
         // --- Progreso de la ruta ---
         const prog = document.getElementById('senderProg');
         if (prog) {
-            if (!ruta) {
+            if (!ruta || ocultarPaneles) {
                 prog.classList.remove('visible');
             } else {
                 prog.classList.add('visible');
@@ -6587,6 +6710,7 @@
         const wrap = document.getElementById('senderRecientesWrap');
         const cont = document.getElementById('senderRecientes');
         if (!wrap || !cont) return;
+        if (ocultarPaneles) { wrap.style.display = 'none'; cont.innerHTML = ''; return; }
         const titulo = document.getElementById('senderUbicTitle');
         if (titulo) titulo.textContent = ruta ? 'Resumen por ubicación · ' + ruta : 'Resumen por ubicación';
         if (!delRuta.length) { wrap.style.display = 'none'; cont.innerHTML = ''; return; }
