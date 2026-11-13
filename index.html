@@ -6099,6 +6099,10 @@
         senderCargarRutasBase();
         senderRefrescarTipoUI();
         document.getElementById('senderRutaLbl').textContent = con ? 'Ruta (tienda) *' : 'Ruta (tienda) · opcional';
+        // Sin base de datos: el campo Ruta (tienda) se oculta y se limpia para que no quede un valor viejo.
+        const rutaRow = document.getElementById('senderRuta').closest('.sender-row');
+        if (rutaRow) rutaRow.style.display = con ? '' : 'none';
+        if (!con) document.getElementById('senderRuta').value = '';
         const u = (document.getElementById('displayUser') || {}).textContent || '';
         const ini = (u.replace('@', '').trim()[0] || '?').toUpperCase();
         document.getElementById('avatarSender').textContent = ini;
