@@ -512,6 +512,71 @@
         .sender-field input[type=text] { text-transform:uppercase; }
         .sender-field input:focus, .sender-field select:focus { border-color:var(--primary); }
         .sender-row { display:flex; gap:10px; margin-bottom:12px; }
+        .repro-last .rl-txt.dos { display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; }
+        .repro-last .rl-txt.dos .rl-cod { font-size:14px; font-weight:800; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text-main); }
+        .repro-last .rl-txt.dos .rl-meta { font-size:11px; font-weight:600; color:var(--text-muted); }
+        .repro-last.ultimo { justify-content:flex-start; padding:10px 14px; }
+        .repro-last .rl-eyebrow { display:block; font-size:9.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); }
+        .smm-card { max-width:360px; padding:0; overflow:hidden; text-align:left; }
+        .smm-head { display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid var(--border); }
+        .smm-badge { flex:0 0 40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; background:var(--success); }
+        .smm-badge .ico { width:22px; height:22px; }
+        .smm-card.warn .smm-badge { background:var(--warning); }
+        .smm-head h3 { margin:0; font-size:16px; font-weight:800; color:var(--text-main); }
+        .smm-head p { margin:2px 0 0; font-size:11.5px; font-weight:600; color:var(--text-muted); }
+        .smm-folio { padding:14px 16px 6px; }
+        .smm-folio span { display:block; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-muted); }
+        .smm-folio b { display:block; font-size:18px; font-weight:800; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--text-main); word-break:break-all; }
+        .smm-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; padding:10px 16px 14px; }
+        .smm-grid div span { display:block; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+        .smm-grid div b { display:block; font-size:14px; font-weight:800; color:var(--text-main); overflow:hidden; text-overflow:ellipsis; }
+        .smm-grid .full { grid-column:1 / -1; }
+        .smm-grid b.alerta { color:var(--warning); }
+        .smm-foot { padding:0 16px 16px; }
+        .sender-tipo-modal { max-width:380px; padding:20px 18px 14px; }
+        .stm-head { text-align:left; margin-bottom:14px; }
+        .stm-head h3 { margin:0 0 4px; font-size:18px; font-weight:800; color:var(--text-main); letter-spacing:-.01em; }
+        .stm-head p { margin:0; font-size:12.5px; font-weight:500; color:var(--text-muted); line-height:1.4; }
+        .stm-opt { display:flex; align-items:center; gap:12px; width:100%; padding:12px; margin-bottom:10px; text-align:left; font-family:inherit; cursor:pointer;
+            background:var(--card-bg); color:var(--text-main); border:1px solid var(--border); border-radius:12px; transition:border-color .15s, background .15s, transform .1s; }
+        .stm-opt:hover { border-color:var(--primary); }
+        .stm-opt:active { transform:scale(.99); background:var(--bg); }
+        .stm-opt:focus-visible, .stm-cancel:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+        .stm-opt.activo { border-color:var(--primary); background:color-mix(in srgb, var(--primary) 7%, transparent); }
+        .stm-opt.sin.activo { border-color:#7c3aed; background:color-mix(in srgb, #7c3aed 7%, transparent); }
+        .stm-ico { flex:0 0 40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--primary); background:color-mix(in srgb, var(--primary) 12%, transparent); }
+        .stm-opt.sin .stm-ico { color:#7c3aed; background:color-mix(in srgb, #7c3aed 12%, transparent); }
+        .stm-ico .ico { width:20px; height:20px; }
+        .stm-txt { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+        .stm-txt b { font-size:14px; font-weight:800; }
+        .stm-txt small { font-size:11.5px; font-weight:500; color:var(--text-muted); line-height:1.35; }
+        .stm-chev { flex:0 0 16px; width:16px; height:16px; color:var(--text-muted); }
+        .stm-cancel { display:block; width:100%; margin-top:2px; padding:10px; background:none; border:none; font-family:inherit; font-size:13px; font-weight:700; color:var(--text-muted); cursor:pointer; border-radius:8px; }
+        .stm-cancel:active { background:var(--bg); }
+        #senderSideMenu .si-txt { display:flex; flex-direction:column; gap:1px; text-align:left; }
+        #senderSideMenu .si-sub { font-size:11px; font-weight:600; color:var(--text-muted); }
+        .sender-prog { display:none; margin-bottom:12px; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); }
+        .sender-prog.visible { display:block; }
+        .sender-prog .sp-top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:8px; }
+        .sender-prog .sp-ruta { font-size:12px; font-weight:800; color:var(--text-main); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .sender-prog .sp-pct { font-size:12px; font-weight:800; color:var(--primary); font-variant-numeric:tabular-nums; }
+        .sender-prog .sp-bar { height:8px; border-radius:999px; background:var(--border); overflow:hidden; margin-bottom:10px; }
+        .sender-prog .sp-fill { height:100%; width:0; background:var(--primary); border-radius:999px; transition:width .25s ease; }
+        .sender-prog .sp-fill.completo { background:#10b981; }
+        .sender-prog .sp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
+        .sender-prog .sp-n { font-size:20px; font-weight:900; color:var(--text-main); font-variant-numeric:tabular-nums; line-height:1.1; }
+        .sender-prog .sp-n.falta { color:#f59e0b; }
+        .sender-prog .sp-n.ok { color:#10b981; }
+        .sender-prog .sp-l { font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+        .sender-prog .sp-aviso { margin-top:8px; font-size:11px; font-weight:600; color:var(--text-muted); }
+        .sender-prog .sp-aviso.err { color:#ef4444; }
+        .sender-otro { display:none; margin-bottom:12px; }
+        .sender-otro.visible { display:flex; }
+        .sub-ubic-head { display:flex; justify-content:space-between; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); padding:0 14px 6px; }
+        .sub-ubic-nums { display:flex; gap:14px; flex-shrink:0; }
+        .sub-ubic-nums .n { text-align:center; min-width:44px; }
+        .sub-ubic-nums .n b { display:block; font-size:16px; font-weight:900; color:var(--text-main); font-variant-numeric:tabular-nums; }
+        .sub-ubic-nums .n span { font-size:9px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:.05em; }
         .sender-tipo-aviso { display:none; margin-bottom:12px; padding:10px; border-radius:10px; background:rgba(239,68,68,0.12); color:#ef4444; font-size:12px; font-weight:700; line-height:1.4; }
     </style>
 </head>
@@ -597,15 +662,23 @@
 
 <!-- MODAL SENDER: elegir escaneo con / sin base de datos -->
 <div id="modalSenderTipo" class="modal modal-blur" style="z-index: 6850;">
-    <div class="modal-content" style="max-width:340px; text-align:center;">
-        <h3 style="margin:0 0 6px; font-size:17px;">Escaneos Sender</h3>
-        <div style="font-size:13px; color:var(--text-muted); font-weight:600; margin-bottom:14px;">¿Cómo quieres escanear?</div>
+    <div class="modal-content sender-tipo-modal" role="dialog" aria-labelledby="senderTipoTitulo">
+        <div class="stm-head">
+            <h3 id="senderTipoTitulo">Tipo de escaneo</h3>
+            <p>Selecciona cómo se validarán los folios en Sender.</p>
+        </div>
         <div id="avisoSenderTipo" class="sender-tipo-aviso"></div>
-        <button class="repro-btn" style="margin-bottom:6px;" onclick="elegirSenderTipo('CON_BASE')">Con base de datos</button>
-        <div style="font-size:11px; color:var(--text-muted); margin:0 0 12px;">Valida contra la carga de la ruta (tienda) y registra en ella</div>
-        <button class="repro-btn" style="margin-bottom:6px; background:#7c3aed;" onclick="elegirSenderTipo('SIN_BASE')">Sin base de datos</button>
-        <div style="font-size:11px; color:var(--text-muted); margin:0 0 12px;">Escaneo general, con todas sus reglas</div>
-        <button class="repro-btn" style="background:var(--text-muted);" onclick="cancelarModalSenderTipo()">Cancelar</button>
+        <button type="button" class="stm-opt" id="optSenderCon" onclick="elegirSenderTipo('CON_BASE')">
+            <span class="stm-ico"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg></span>
+            <span class="stm-txt"><b>Con base de datos</b><small>Valida contra la carga de la ruta (tienda) y registra en ella</small></span>
+            <svg class="ico stm-chev" aria-hidden="true"><use href="#i-chev"/></svg>
+        </button>
+        <button type="button" class="stm-opt sin" id="optSenderSin" onclick="elegirSenderTipo('SIN_BASE')">
+            <span class="stm-ico"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
+            <span class="stm-txt"><b>Sin base de datos</b><small>Escaneo general, con todas sus reglas</small></span>
+            <svg class="ico stm-chev" aria-hidden="true"><use href="#i-chev"/></svg>
+        </button>
+        <button type="button" class="stm-cancel" onclick="cancelarModalSenderTipo()">Cancelar</button>
     </div>
 </div>
 
@@ -620,8 +693,12 @@
         <button class="side-menu-close" onclick="cerrarMenuLateralSender()" aria-label="Cerrar menú"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
     <div class="side-menu-body">
+        <div class="side-menu-section-title">Consulta</div>
+        <button class="side-menu-item" onclick="cerrarMenuLateralSender(); abrirModalSenderLista()"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><span>Ver últimos escaneos</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cerrarMenuLateralSender(); abrirModalSenderResumen()"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>Ver avance por ruta</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cerrarMenuLateralSender(); abrirModalSenderFaltantes()"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span>Ver faltantes por ruta</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
         <div class="side-menu-section-title">Escaneo</div>
-        <button class="side-menu-item" onclick="cambiarTipoSender()"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg><span>Cambiar tipo de escaneo</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button class="side-menu-item" onclick="cambiarTipoSender()"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg><span class="si-txt">Cambiar tipo de escaneo<small class="si-sub" id="senderMenuTipo">Con base de datos</small></span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
         <button class="side-menu-item" onclick="cerrarMenuLateralSender(); abrirSelectorModo();"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><span>Cambiar de módulo</span><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></button>
     </div>
     <div class="side-menu-footer">
@@ -640,20 +717,12 @@
         <button class="repro-menu-toggle" onclick="abrirMenuLateralSender()" title="Menú" aria-label="Abrir menú"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
         <div class="repro-title">
             <h2>Escaneos Sender</h2>
-            <div class="repro-sub"><b id="tTotalSender">0</b> registros</div>
+            <div class="repro-sub"><b id="tTotalSender">0</b> registros · <span id="senderModoTxt">Con base de datos</span></div>
         </div>
         <button class="btn-toggle-modo" onclick="cerrarPantallaSender()" title="Volver" aria-label="Volver"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg><span>Volver</span></button>
     </div>
     <div class="repro-body">
         <div class="repro-card">
-            <div class="sender-modebar">
-                <div class="sm-txt">
-                    <span class="sender-pill" id="senderPill">Con base de datos</span>
-                    <span class="sm-desc" id="senderPillDesc">Valida contra la carga de la ruta</span>
-                </div>
-                <button type="button" class="sender-change" onclick="cambiarTipoSender()">Cambiar</button>
-            </div>
-
             <label class="repro-label repro-scan-label" for="inpScanSender">Código de paquete</label>
             <input type="text" id="inpScanSender" class="repro-input" placeholder="ESCANEE AQUÍ..." autocomplete="off"
                 onkeydown="if(event.key==='Enter'){procesarEscaneoSender();}">
@@ -662,8 +731,19 @@
 
             <div class="sender-row">
                 <label class="sender-field"><span class="sender-label" id="senderRutaLbl">Ruta (tienda)</span>
-                    <input type="text" id="senderRuta" placeholder="Ej. 1001 / nombre de la tienda" autocomplete="off">
+                    <input type="text" id="senderRuta" placeholder="Ej. 1001 / nombre de la tienda" autocomplete="off" list="senderRutasList" oninput="actualizarSenderUI()" onchange="actualizarSenderUI()">
+                    <datalist id="senderRutasList"></datalist>
                 </label>
+            </div>
+            <div class="sender-prog" id="senderProg" role="status" aria-live="polite">
+                <div class="sp-top"><span class="sp-ruta" id="spRuta">—</span><span class="sp-pct" id="spPct">0%</span></div>
+                <div class="sp-bar"><div class="sp-fill" id="spFill"></div></div>
+                <div class="sp-grid">
+                    <div><div class="sp-n" id="spProg">0</div><div class="sp-l">Programados</div></div>
+                    <div><div class="sp-n ok" id="spEsc">0</div><div class="sp-l">Escaneados</div></div>
+                    <div><div class="sp-n falta" id="spFalta">0</div><div class="sp-l">Faltan</div></div>
+                </div>
+                <div class="sp-aviso" id="spAviso"></div>
             </div>
             <div class="sender-row">
                 <label class="sender-field"><span class="sender-label">Ubicación</span>
@@ -679,16 +759,15 @@
                 </label>
                 <label class="sender-field"><span class="sender-label">Opción</span>
                     <select id="senderCat" onchange="onSenderCatChange(this)">
-                        <option value="-">SIN OPCIÓN</option>
-                        <option value="MINI">MINI</option>
-                        <option value="INVENTARIADO">INVENTARIADO</option>
-                        <option value="MULTIFOLIO">MULTIFOLIO</option>
-                        <option value="REZAGOS">REZAGOS</option>
-                        <option value="EXTRAIDO">EXTRAIDO</option>
-                        <option value="RUTEO IL">RUTEO IL</option>
-                        <option value="RUTEO IL (MULTIFOLIOS)">RUTEO IL (MULTIFOLIOS)</option>
-                        <option value="OTRO">OTRO...</option>
+                        <option value="SENDER INV">SENDER INV</option>
+                        <option value="SENDER INV MULTIFOLIOS">SENDER INV MULTIFOLIOS</option>
+                        <option value="OTRO">OTROS (escribir)...</option>
                     </select>
+                </label>
+            </div>
+            <div class="sender-row sender-otro" id="senderOtroRow">
+                <label class="sender-field"><span class="sender-label">Otra opción (editable)</span>
+                    <input type="text" id="senderCatOtro" placeholder="Escribe la opción" autocomplete="off">
                 </label>
             </div>
 
@@ -703,9 +782,46 @@
         </div>
 
         <div id="senderRecientesWrap" style="display:none;">
-            <div class="repro-recientes-title">Últimos registros</div>
+            <div class="repro-recientes-title" id="senderUbicTitle">Resumen por ubicación</div>
+            <div class="sub-ubic-head"><span>Ubicación</span><span>Folios · Bultos</span></div>
             <div id="senderRecientes"></div>
         </div>
+    </div>
+</div>
+
+<!-- MODAL SENDER: dato de la coincidencia (ambos modos) -->
+<!-- MODALES DE CONSULTA SENDER -->
+<div id="modalSenderLista" class="modal modal-blur" style="z-index: 6900;" onclick="if(event.target===this)cerrarModalSender('modalSenderLista')">
+    <div class="modal-content" style="max-width:360px; height:80vh; display:flex; flex-direction:column;">
+        <h3 style="font-weight:900; color:var(--primary); margin-bottom:10px;">📋 Últimos escaneos</h3>
+        <div id="senderListaCont" style="overflow-y:auto; flex:1; margin-bottom:14px;"></div>
+        <button class="repro-btn" onclick="cerrarModalSender('modalSenderLista')">Cerrar</button>
+    </div>
+</div>
+<div id="modalSenderResumen" class="modal modal-blur" style="z-index: 6900;" onclick="if(event.target===this)cerrarModalSender('modalSenderResumen')">
+    <div class="modal-content" style="max-width:360px; height:80vh; display:flex; flex-direction:column;">
+        <h3 style="font-weight:900; color:var(--primary); margin-bottom:10px;">📊 Avance por ruta</h3>
+        <div id="senderResumenCont" style="overflow-y:auto; flex:1; margin-bottom:14px;"></div>
+        <button class="repro-btn" onclick="cerrarModalSender('modalSenderResumen')">Cerrar</button>
+    </div>
+</div>
+<div id="modalSenderFaltantes" class="modal modal-blur" style="z-index: 6900;" onclick="if(event.target===this)cerrarModalSender('modalSenderFaltantes')">
+    <div class="modal-content" style="max-width:380px; height:85vh; display:flex; flex-direction:column;">
+        <h3 style="font-weight:900; color:var(--danger); margin-bottom:10px;">🔎 Faltantes por ruta</h3>
+        <div id="senderFaltantesCont" style="overflow-y:auto; flex:1; margin-bottom:14px;"></div>
+        <button class="repro-btn" style="background:var(--text-muted);" onclick="cerrarModalSender('modalSenderFaltantes')">Cerrar</button>
+    </div>
+</div>
+
+<div id="modalSenderMatch" class="modal modal-blur" style="z-index: 6900;" onclick="if(event.target===this)cerrarModalSenderMatch()">
+    <div class="modal-content smm-card" id="smmCard" role="dialog" aria-live="polite">
+        <div class="smm-head">
+            <span class="smm-badge"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span>
+            <div><h3 id="smmTitulo">Coincidencia encontrada</h3><p id="smmSub">Registrado correctamente</p></div>
+        </div>
+        <div class="smm-folio"><span>Folio</span><b id="smmFolio">—</b></div>
+        <div class="smm-grid" id="smmGrid"></div>
+        <div class="smm-foot"><button type="button" class="repro-btn" onclick="cerrarModalSenderMatch()"><span>Continuar</span></button></div>
     </div>
 </div>
 
@@ -3072,6 +3188,7 @@
             const badgeTotalBaseRutaMenu = document.getElementById('badgeTotalBaseRutaMenu');
             if (badgeTotalBaseRutaMenu) badgeTotalBaseRutaMenu.textContent = baseDatosRutaNube.length;
             actualizarIndicadorBaseRuta();
+            try { senderCargarRutasBase(); actualizarSenderUI(); } catch (e) {}
             // El resumen por ubicación es independiente del modo: se
             // refresca siempre que cambia la Base de Ruta en la nube.
             actualizarUIRutaLocal();
@@ -3715,6 +3832,7 @@
 
     function continuarEscaneoNormalConCoincidencia(val, encontrado) {
         const inp = document.getElementById('inpScan');
+        if (modoOperativo === 'sender') senderFilaCoincidencia = encontrado || null;
 
         const info = {
             dia: encontrado ? buscarColumna(encontrado, ["DIA"]) : null,
@@ -4960,7 +5078,11 @@
 
         rtdb.ref(nodoEscaneos()).push(nuevo).then(() => {
             playBeep(800);
-            if (onGuardado) { onGuardado(nuevo); } else { showToast(); }
+            if (modoOperativo === 'sender') {
+                senderPostRegistro(nuevo, senderFilaCoincidencia);
+                senderFilaCoincidencia = null;
+                if (onGuardado) { onGuardado(nuevo); }
+            } else if (onGuardado) { onGuardado(nuevo); } else { showToast(); }
             document.getElementById('inpScan').value = "";
             document.getElementById('inpScan').focus();
         });
@@ -5890,6 +6012,8 @@
         const aviso = document.getElementById('avisoSenderTipo');
         aviso.style.display = 'none';
         aviso.innerHTML = '';
+        document.getElementById('optSenderCon').classList.toggle('activo', modoOperativo === 'sender' && senderTipo === 'CON_BASE');
+        document.getElementById('optSenderSin').classList.toggle('activo', modoOperativo === 'sender' && senderTipo === 'SIN_BASE');
         document.getElementById('modalSenderTipo').style.display = 'flex';
     }
 
@@ -5929,21 +6053,51 @@
         document.getElementById('senderSideMenuOverlay').classList.remove('abierto');
     }
 
+    // Sender "sin base" reutiliza el flujo del escaneo general, que escribe en los
+    // campos y paneles del módulo general. Se guarda su estado antes de que Sender lo
+    // toque y se devuelve al salir, para que el general no aparezca como "escaneado".
+    let senderGeneralPrevio = null;
+    const SENDER_IDS_VALOR = ['inpCat', 'inpUbic', 'inpZona', 'inpBultos'];
+    const SENDER_IDS_TEXTO = ['dispLast', 'dispDia', 'dispRuta', 'dispSec'];
+    const SENDER_IDS_BLOQUE = ['bloqueDispDia', 'bloqueDispSec', 'bloqueDispRuta', 'bloqueSinProgUnico'];
+
+    function senderGuardarGeneral() {
+        if (senderGeneralPrevio !== null) return;
+        const g = { valor: {}, texto: {}, bloque: {} };
+        SENDER_IDS_VALOR.forEach(id => { const el = document.getElementById(id); if (el) g.valor[id] = el.value; });
+        SENDER_IDS_TEXTO.forEach(id => { const el = document.getElementById(id); if (el) g.texto[id] = el.textContent; });
+        SENDER_IDS_BLOQUE.forEach(id => { const el = document.getElementById(id); if (el) g.bloque[id] = el.style.display; });
+        senderGeneralPrevio = g;
+    }
+
+    function senderRestaurarGeneral() {
+        const g = senderGeneralPrevio;
+        if (!g) return;
+        senderGeneralPrevio = null;
+        Object.keys(g.valor).forEach(id => { const el = document.getElementById(id); if (el) el.value = g.valor[id]; });
+        Object.keys(g.texto).forEach(id => { const el = document.getElementById(id); if (el) el.textContent = g.texto[id]; });
+        Object.keys(g.bloque).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = g.bloque[id]; });
+    }
+
     function senderRestaurarForzar() {
         if (senderForzarPrevio !== null) {
             document.getElementById('chkModoForzar').checked = senderForzarPrevio;
             senderForzarPrevio = null;
         }
+        senderRestaurarGeneral();
+    }
+
+    function senderRefrescarTipoUI() {
+        const con = senderTipo === 'CON_BASE';
+        const txt = con ? 'Con base de datos' : 'Sin base de datos';
+        const h = document.getElementById('senderModoTxt'); if (h) h.textContent = txt;
+        const m = document.getElementById('senderMenuTipo'); if (m) m.textContent = txt;
     }
 
     function activarPantallaSender() {
         const con = senderTipo === 'CON_BASE';
-        const pill = document.getElementById('senderPill');
-        pill.textContent = con ? 'Con base de datos' : 'Sin base de datos';
-        pill.classList.toggle('sin', !con);
-        document.getElementById('senderPillDesc').textContent = con
-            ? 'Valida contra la carga de la ruta (tienda)'
-            : 'Escaneo general, con todas sus reglas';
+        senderCargarRutasBase();
+        senderRefrescarTipoUI();
         document.getElementById('senderRutaLbl').textContent = con ? 'Ruta (tienda) *' : 'Ruta (tienda) · opcional';
         const u = (document.getElementById('displayUser') || {}).textContent || '';
         const ini = (u.replace('@', '').trim()[0] || '?').toUpperCase();
@@ -5958,6 +6112,7 @@
     function senderEstado(texto, estado) {
         const box = document.getElementById('senderLastBox');
         if (!box) return;
+        senderBoxTocado = true;
         const icono = estado === 'error' ? 'xc' : (estado === 'warn' ? 'warn' : 'okc');
         box.className = 'repro-last estado-' + estado;
         box.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-' + icono + '"/></svg><span class="rl-txt"></span>';
@@ -5975,15 +6130,20 @@
     }
 
     function onSenderCatChange(sel) {
-        if (sel.value !== 'OTRO') return;
-        const txt = prompt('Escribe el nombre de la opción personalizada:');
-        if (txt && txt.trim()) {
-            const limpio = txt.trim().toUpperCase();
-            senderAsegurarOpcion(sel, limpio);
-            sel.value = limpio;
-        } else {
-            sel.value = '-';
+        const row = document.getElementById('senderOtroRow');
+        const inp = document.getElementById('senderCatOtro');
+        const esOtro = sel.value === 'OTRO';
+        row.classList.toggle('visible', esOtro);
+        if (esOtro) setTimeout(() => inp.focus(), 50);
+    }
+
+    function senderCatActual() {
+        const v = document.getElementById('senderCat').value;
+        if (v === 'OTRO') {
+            const t = document.getElementById('senderCatOtro').value.trim().toUpperCase();
+            return t || 'OTRO';
         }
+        return v.toUpperCase();
     }
 
     function senderValores() {
@@ -5992,7 +6152,7 @@
             ubic: document.getElementById('senderUbic').value.toUpperCase().trim(),
             zona: document.getElementById('senderZona').value.toUpperCase().trim(),
             bul: parseInt(document.getElementById('senderBultos').value) || 1,
-            cat: document.getElementById('senderCat').value.toUpperCase(),
+            cat: senderCatActual(),
             forzado: document.getElementById('chkForzadoSender').checked
         };
     }
@@ -6016,6 +6176,16 @@
 
     // ---------- CON BASE: valida contra la carga de la ruta ----------
     function senderConBase(val, v) {
+        if (!v.ruta) {
+            // Ruta vacía: se toma de la columna ruta de la base según el folio escaneado.
+            const c = coincidenciasVigentesRF(val, '');
+            const rutasFolio = new Set(c.map(b => normRutaRF(b.ruta)).filter(Boolean));
+            if (rutasFolio.size === 1) {
+                v.ruta = Array.from(rutasFolio)[0];
+                document.getElementById('senderRuta').value = v.ruta;
+                actualizarSenderUI();
+            }
+        }
         if (!v.ruta) {
             senderEstado('❌ Indica la Ruta (tienda) antes de escanear', 'error');
             playBeep(200);
@@ -6110,7 +6280,7 @@
             ubic: v.ubic || v.ruta,
             zona: v.zona || 'SIN ZONA',
             zonaEsperada: zonaEsperada || null,
-            cat: (v.cat && v.cat !== '-') ? v.cat : 'RUTEO IL',
+            cat: (v.cat && v.cat !== '-') ? v.cat : 'SENDER INV',
             hora: obtenerFechaYHoraActual(),
             forzado: !!forzadoFinal,
             usuario: usuarioActivo,
@@ -6122,14 +6292,14 @@
 
         rtdb.ref('escaneos_sender').push(reg).then(() => {
             emitirSonidoCoincidenciaRuta();
-            senderEstado('✅ ' + val + ' — registrado en ruta ' + reg.ruta, 'ok');
-            mostrarModalRutaAlert('success', '✅ REGISTRADO', `Folio <b>${senderEsc(val)}</b> verificado en ruta.`, 1500);
+            senderPostRegistro(reg, coin);
             document.getElementById('inpScanSender').focus();
         });
     }
 
     // ---------- SIN BASE: escaneo general con todas sus reglas ----------
     function senderSinBase(val, v) {
+        senderGuardarGeneral(); // se devuelve al salir de Sender (senderRestaurarForzar)
         // El escaneo general lee sus propios campos: se cargan con los datos de este panel.
         const selMain = document.getElementById('inpCat');
         senderAsegurarOpcion(selMain, v.cat);
@@ -6163,25 +6333,278 @@
         continuarEscaneoNormalConCoincidencia(val, coincidencias[0] || null);
     }
 
-    // ---------- Panel: total y últimos registros ----------
+    // ---------- Último escaneo + modal de coincidencia ----------
+    let senderBoxTocado = false;
+    let senderFilaCoincidencia = null;
+    let senderMatchTimer = null;
+
+    function senderMetaReg(r) {
+        return [r.tienda || (r.ruta && r.ruta !== 'FORZADO' && r.ruta !== 'SIN PROG.' ? r.ruta : ''), r.ubic, r.zona]
+            .filter(x => x && x !== '-' && x !== 'SIN ZONA').map(senderEsc).join(' · ');
+    }
+
+    function senderMostrarUltimo(r) {
+        const box = document.getElementById('senderLastBox');
+        if (!box || !r) return;
+        senderBoxTocado = true;
+        const hora = String(r.hora || '').split(' - ')[1] || '';
+        const meta = [senderMetaReg(r), r.bul ? r.bul + ' bulto(s)' : '', hora].filter(Boolean).join(' · ');
+        box.className = 'repro-last ultimo estado-' + (r.forzado ? 'warn' : 'ok');
+        box.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-' + (r.forzado ? 'warn' : 'okc') + '"/></svg>' +
+            '<span class="rl-txt dos"><span class="rl-eyebrow">Último escaneo</span><span class="rl-cod">' + senderEsc(r.guiaOriginal || r.guia) + '</span>' +
+            '<span class="rl-meta">' + (meta || '—') + '</span></span>';
+    }
+
+    function cerrarModalSenderMatch() {
+        clearTimeout(senderMatchTimer);
+        document.getElementById('modalSenderMatch').style.display = 'none';
+        const i = document.getElementById('inpScanSender'); if (i) i.focus();
+    }
+
+    // reg = registro guardado; fila = fila de la base que coincidió (o null)
+    function senderMostrarCoincidencia(reg, fila) {
+        const sinProg = !fila && (reg.ruta === 'SIN PROG.' || reg.ruta === 'FORZADO');
+        const warn = sinProg || !!reg.forzado;
+        const card = document.getElementById('smmCard');
+        card.classList.toggle('warn', warn);
+        card.querySelector('.smm-badge use').setAttribute('href', warn ? '#i-warn' : '#i-check');
+        document.getElementById('smmTitulo').textContent = sinProg ? 'Sin coincidencia en base' : 'Coincidencia encontrada';
+        document.getElementById('smmSub').textContent = reg.forzado ? 'Registrado como forzado' : 'Registrado correctamente';
+        document.getElementById('smmFolio').textContent = reg.guiaOriginal || reg.guia;
+        const zonaBase = fila ? String(buscarColumna(fila, ['ZONA']) || '').toUpperCase().trim() : (reg.zonaEsperada || '');
+        const zonaDifiere = !!zonaBase && zonaBase !== 'SIN ZONA' && reg.zona && reg.zona !== 'SIN ZONA' && zonaBase !== reg.zona;
+        const hora = String(reg.hora || '').split(' - ')[1] || '';
+        const campos = [
+            ['Ruta', reg.ruta, ''], ['Día', reg.dia, ''], ['Secuencia', reg.sec, ''], ['Bultos', reg.bul, ''],
+            ['Zona', reg.zona, zonaDifiere ? 'alerta' : ''],
+            ['Zona esperada', zonaDifiere ? zonaBase : '', 'alerta'],
+            ['Ubicación', reg.ubic, ''], ['Opción', reg.cat, ''],
+            ['Tienda', reg.tienda, 'full'], ['Hora', hora, '']
+        ].filter(c => c[1] !== undefined && c[1] !== null && String(c[1]).trim() !== '' && c[1] !== '-' && c[1] !== 'S/P' && c[1] !== 'S/S' && c[1] !== 'SIN ZONA');
+        document.getElementById('smmGrid').innerHTML = campos.map(c =>
+            '<div class="' + (c[2] === 'full' ? 'full' : '') + '"><span>' + c[0] + '</span><b class="' + (c[2] === 'alerta' ? 'alerta' : '') + '">' + senderEsc(c[1]) + '</b></div>').join('');
+        document.getElementById('modalSenderMatch').style.display = 'flex';
+        clearTimeout(senderMatchTimer);
+        senderMatchTimer = setTimeout(cerrarModalSenderMatch, warn ? 4000 : 2500);
+    }
+
+    function senderPostRegistro(reg, fila) {
+        senderMostrarUltimo(reg);
+        senderMostrarCoincidencia(reg, fila);
+    }
+
+    // ---------- Panel: progreso de la ruta + resumen por ubicación ----------
+    // Rutas disponibles en la base (columna ruta) como sugerencias del campo Ruta.
+    function senderCargarRutasBase() {
+        const dl = document.getElementById('senderRutasList');
+        const inp = document.getElementById('senderRuta');
+        if (!dl || !inp) return;
+        const con = senderTipo === 'CON_BASE';
+        if (con) inp.setAttribute('list', 'senderRutasList'); else inp.removeAttribute('list');
+        const rutas = new Set();
+        baseVigenteRF().forEach(b => { const r = normRutaRF(b.ruta); if (r) rutas.add(r); });
+        const orden = Array.from(rutas).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        dl.innerHTML = con ? orden.map(r => '<option value="' + senderEsc(r) + '"></option>').join('') : '';
+        // Con base y una sola ruta cargada: se llena sola.
+        if (con && !inp.value.trim() && orden.length === 1) inp.value = orden[0];
+    }
+
+    function senderProgramadosRuta(ruta) {
+        // Seguimientos programados en la base de la ruta (última carga por guía, sin repetir).
+        const set = new Set();
+        if (!ruta) return set;
+        baseVigenteRF().forEach((b, guia) => { if (normRutaRF(b.ruta) === ruta) set.add(guia); });
+        return set;
+    }
+
+    function senderRegistrosJornada() {
+        const jornada = obtenerJornadaLogica(new Date());
+        return scansSenderArr.filter(s => s && s.hora && !(s.cat && String(s.cat).startsWith('IMPRESO')) &&
+            obtenerJornadaLogica(parsearHoraAObj(s.hora)) === jornada);
+    }
+
+    // ---------- Consulta Sender: últimos escaneos / avance por ruta / faltantes por ruta ----------
+    // Usan solo los escaneos de Sender (escaneos_sender) de la jornada actual y,
+    // para programados/faltantes, la carga de la base de rutas.
+    function senderRutaDeReg(s) {
+        const r = normRutaRF(s.tienda || ((s.ruta && s.ruta !== 'FORZADO' && s.ruta !== 'SIN PROG.') ? s.ruta : '') || s.ubic);
+        return (r && r !== '-') ? r : 'SIN RUTA';
+    }
+
+    // Por ruta: programados (base) y folios escaneados (jornada).
+    function senderResumenPorRuta() {
+        const rutas = new Map();
+        const get = r => { if (!rutas.has(r)) rutas.set(r, { prog: new Set(), esc: new Set() }); return rutas.get(r); };
+        baseVigenteRF().forEach((b, guia) => { const r = normRutaRF(b.ruta); if (r) get(r).prog.add(guia); });
+        senderRegistrosJornada().forEach(s => get(senderRutaDeReg(s)).esc.add(s.guiaOriginal || s.guia));
+        return rutas;
+    }
+
+    function senderVacio(txt) {
+        return '<p style="text-align:center; color:var(--text-muted); font-size:11px; padding:10px 0;">' + txt + '</p>';
+    }
+
+    function cerrarModalSender(id) {
+        document.getElementById(id).style.display = 'none';
+        const i = document.getElementById('inpScanSender'); if (i) i.focus();
+    }
+
+    function abrirModalSenderLista() { renderSenderLista(); document.getElementById('modalSenderLista').style.display = 'flex'; }
+    function abrirModalSenderResumen() { renderSenderResumen(); document.getElementById('modalSenderResumen').style.display = 'flex'; }
+    function abrirModalSenderFaltantes() { renderSenderFaltantes(); document.getElementById('modalSenderFaltantes').style.display = 'flex'; }
+
+    function renderSenderLista() {
+        const cont = document.getElementById('senderListaCont');
+        if (!cont) return;
+        const lista = senderRegistrosJornada().slice(0, 60);
+        if (!lista.length) { cont.innerHTML = senderVacio('Aún no hay escaneos en esta jornada'); return; }
+        cont.innerHTML = lista.map(r => {
+            const hora = String(r.hora || '').split(' - ')[1] || '';
+            const meta = [senderMetaReg(r), r.bul ? r.bul + ' bulto(s)' : '', hora, r.usuario].filter(Boolean).join(' · ');
+            return '<div class="repro-item"><div><div class="cod">' + senderEsc(r.guiaOriginal || r.guia) + '</div>' +
+                '<div class="meta">' + (meta || '—') + '</div></div>' +
+                (r.forzado ? '<div style="font-size:10px; font-weight:800; color:var(--warning);">FORZADO</div>' : '') + '</div>';
+        }).join('');
+    }
+
+    function renderSenderResumen() {
+        const cont = document.getElementById('senderResumenCont');
+        if (!cont) return;
+        const rutas = senderResumenPorRuta();
+        if (!rutas.size) { cont.innerHTML = senderVacio('Sin rutas en base ni escaneos'); return; }
+        cont.innerHTML = Array.from(rutas.entries()).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true })).map(([ruta, r]) => {
+            const total = r.prog.size;
+            let escProg = 0; r.prog.forEach(g => { if (r.esc.has(g)) escProg++; });
+            const extras = r.esc.size - escProg;
+            const falta = total - escProg;
+            const der = total
+                ? '<div style="font-weight:800; color:' + (falta > 0 ? 'var(--warning)' : 'var(--success)') + '; font-size:12px;">' + escProg + ' / ' + total + '</div>' +
+                  '<div class="meta">' + (falta > 0 ? 'Faltan ' + falta : 'Completo ✓') + (extras > 0 ? ' · +' + extras + ' fuera de base' : '') + '</div>'
+                : '<div style="font-weight:800; color:var(--text-main); font-size:12px;">' + r.esc.size + '</div><div class="meta">Sin base</div>';
+            return '<div class="repro-item"><div><div class="cod">' + senderEsc(ruta) + '</div><div class="meta">' +
+                (total ? 'Total: ' + total : 'Escaneados sin base') + '</div></div><div style="text-align:right;">' + der + '</div></div>';
+        }).join('');
+    }
+
+    function senderToggleFaltantes(i) {
+        const b = document.getElementById('senderFaltBloque_' + i);
+        if (b) b.style.display = (b.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function renderSenderFaltantes() {
+        const cont = document.getElementById('senderFaltantesCont');
+        if (!cont) return;
+        const base = baseVigenteRF();
+        if (!base.size) { cont.innerHTML = senderVacio('Sin base de datos de ruta cargada'); return; }
+        const rutas = senderResumenPorRuta();
+        const lista = Array.from(rutas.entries()).filter(([r, x]) => x.prog.size).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+        if (!lista.length) { cont.innerHTML = senderVacio('Sin rutas disponibles'); return; }
+        cont.innerHTML = lista.map(([ruta, x], idx) => {
+            const faltan = Array.from(x.prog).filter(g => !x.esc.has(g));
+            const filas = faltan.length ? faltan.map(g => {
+                const b = base.get(g) || {};
+                return '<div class="repro-item"><div><div class="cod">' + senderEsc(g) + '</div><div class="meta">Día: ' +
+                    senderEsc(b.dia || '—') + ' · Sec: ' + senderEsc(b.secuencia || '—') + '</div></div></div>';
+            }).join('') : '<p style="text-align:center; color:var(--success); font-size:11px; font-weight:800; padding:12px 0;">✅ Completo</p>';
+            return '<div class="repro-card" style="margin-bottom:10px;">' +
+                '<div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="senderToggleFaltantes(' + idx + ')">' +
+                '<div class="cod">' + senderEsc(ruta) + '</div>' +
+                '<div style="font-weight:800; font-size:12px; color:' + (faltan.length ? 'var(--danger)' : 'var(--success)') + ';">' +
+                (faltan.length ? 'Faltan ' + faltan.length : 'Completo ✓') + '</div></div>' +
+                '<div id="senderFaltBloque_' + idx + '" style="display:none; margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">' + filas + '</div></div>';
+        }).join('');
+    }
+
+    // Si un modal de consulta está abierto, se refresca cuando llegan escaneos nuevos.
+    function senderRefrescarConsultas() {
+        const abierto = id => { const m = document.getElementById(id); return m && m.style.display === 'flex'; };
+        if (abierto('modalSenderLista')) renderSenderLista();
+        if (abierto('modalSenderResumen')) renderSenderResumen();
+        if (abierto('modalSenderFaltantes')) {
+            // conserva las rutas desplegadas
+            const cont = document.getElementById('senderFaltantesCont');
+            const abiertos = Array.from(cont.querySelectorAll('[id^="senderFaltBloque_"]')).filter(b => b.style.display === 'block').map(b => b.id);
+            renderSenderFaltantes();
+            abiertos.forEach(id => { const b = document.getElementById(id); if (b) b.style.display = 'block'; });
+        }
+    }
+
     function actualizarSenderUI() {
-        const lista = scansSenderArr;
         const t = document.getElementById('tTotalSender');
-        if (t) t.textContent = lista.length;
+        if (t) t.textContent = scansSenderArr.length;
+        try { senderRefrescarConsultas(); } catch (e) {}
+        const inpRuta = document.getElementById('senderRuta');
+        if (!inpRuta) return;
+        const ruta = normRutaRF(inpRuta.value);
+        const reg = senderRegistrosJornada();
+        const delRuta = ruta ? reg.filter(s => normRutaRF(s.tienda || s.ruta) === ruta) : reg;
+        if (!senderBoxTocado) {
+            const mio = reg.find(s => s.usuario === usuarioActivo);
+            if (mio) { senderMostrarUltimo(mio); senderBoxTocado = false; }
+        }
+
+        // --- Progreso de la ruta ---
+        const prog = document.getElementById('senderProg');
+        if (prog) {
+            if (!ruta) {
+                prog.classList.remove('visible');
+            } else {
+                prog.classList.add('visible');
+                const programados = senderProgramadosRuta(ruta);
+                const guiasEsc = new Set(delRuta.map(s => s.guiaOriginal || s.guia));
+                let escProg = 0;
+                programados.forEach(g => { if (guiasEsc.has(g)) escProg++; });
+                const extras = guiasEsc.size - escProg;
+                const total = programados.size;
+                const faltan = Math.max(0, total - escProg);
+                const pct = total ? Math.min(100, Math.round(escProg * 100 / total)) : 0;
+                document.getElementById('spRuta').textContent = 'Ruta ' + ruta;
+                document.getElementById('spPct').textContent = pct + '%';
+                const fill = document.getElementById('spFill');
+                fill.style.width = pct + '%';
+                fill.classList.toggle('completo', total > 0 && faltan === 0);
+                document.getElementById('spProg').textContent = total;
+                document.getElementById('spEsc').textContent = guiasEsc.size;
+                document.getElementById('spFalta').textContent = faltan;
+                const av = document.getElementById('spAviso');
+                av.classList.remove('err');
+                if (!total) {
+                    av.textContent = 'No hay seguimientos programados en la base para esta ruta.';
+                    av.classList.add('err');
+                } else if (faltan === 0) {
+                    av.textContent = '✓ Ruta completa' + (extras > 0 ? ' · ' + extras + ' folio(s) fuera de la base' : '');
+                } else {
+                    av.textContent = extras > 0 ? extras + ' folio(s) escaneado(s) fuera de la base' : '';
+                }
+            }
+        }
+
+        // --- Resumen por ubicación (folios y bultos) ---
         const wrap = document.getElementById('senderRecientesWrap');
         const cont = document.getElementById('senderRecientes');
         if (!wrap || !cont) return;
-        const jornada = obtenerJornadaLogica(new Date());
-        const mios = lista.filter(s => s.usuario === usuarioActivo && s.hora && obtenerJornadaLogica(parsearHoraAObj(s.hora)) === jornada).slice(0, 6);
-        if (!mios.length) { wrap.style.display = 'none'; cont.innerHTML = ''; return; }
+        const titulo = document.getElementById('senderUbicTitle');
+        if (titulo) titulo.textContent = ruta ? 'Resumen por ubicación · ' + ruta : 'Resumen por ubicación';
+        if (!delRuta.length) { wrap.style.display = 'none'; cont.innerHTML = ''; return; }
+        const grupos = new Map();
+        delRuta.forEach(s => {
+            const u = (s.ubic && s.ubic !== '-') ? String(s.ubic).toUpperCase() : 'SIN UBICACIÓN';
+            if (!grupos.has(u)) grupos.set(u, { folios: new Set(), bultos: 0, zonas: new Set() });
+            const g = grupos.get(u);
+            const k = s.guiaOriginal || s.guia;
+            if (!g.folios.has(k)) { g.folios.add(k); g.bultos += parseInt(s.bul) || 1; }
+            if (s.zona && s.zona !== 'SIN ZONA' && s.zona !== '-') g.zonas.add(s.zona);
+        });
         wrap.style.display = 'block';
-        cont.innerHTML = mios.map(s => {
-            const hora = String(s.hora || '').split(' - ')[1] || '';
-            const meta = [s.tienda || s.ruta, s.ubic, s.zona].filter(x => x && x !== '-').map(senderEsc).join(' · ');
-            const tag = s.forzado ? '<span class="rr-tag warn">FORZADO</span>' : '<span class="rr-tag">' + (s.senderModo === 'SIN_BASE' ? 'SIN BASE' : 'CON BASE') + '</span>';
-            return '<div class="rr-item"><div class="rr-main"><span class="rr-cod">' + senderEsc(s.guia) + '</span><span class="rr-meta">' + (meta || '—') + '</span></div>' +
-                   '<div class="rr-side">' + tag + '<span class="rr-hora">' + senderEsc(hora) + '</span></div></div>';
-        }).join('');
+        cont.innerHTML = Array.from(grupos.entries())
+            .sort((a, b) => b[1].folios.size - a[1].folios.size)
+            .map(([u, g]) => {
+                const zonas = Array.from(g.zonas).map(senderEsc).join(' · ');
+                return '<div class="rr-item"><div class="rr-main"><span class="rr-cod">' + senderEsc(u) + '</span>' +
+                    '<span class="rr-meta">' + (zonas || '—') + '</span></div>' +
+                    '<div class="sub-ubic-nums"><div class="n"><b>' + g.folios.size + '</b><span>Folios</span></div>' +
+                    '<div class="n"><b>' + g.bultos + '</b><span>Bultos</span></div></div></div>';
+            }).join('');
     }
 
     // El escáner puede devolver el foco al campo del escaneo general (tras cerrar un modal):
