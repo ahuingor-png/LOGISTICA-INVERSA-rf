@@ -409,11 +409,28 @@
         .repro-item { display:flex; justify-content:space-between; align-items:center; padding:9px 10px; border-bottom:1px solid var(--border); font-size:12px; }
         .repro-item .cod { font-weight:800; color:var(--text-main); }
         .repro-item .meta { font-size:10px; color:var(--text-muted); }
-        #modalElegirModo .modal-content { max-width:340px; text-align:center; }
-        .modo-btn { width:100%; padding:16px; margin-bottom:10px; border-radius:var(--radius-md); font-weight:800; font-size:13px; border:2px solid var(--border); background:var(--bg); color:var(--text-main); cursor:pointer; }
-        .modo-btn.picking { border-color:var(--primary); color:var(--primary); }
-        .modo-btn.repro { border-color:var(--success); color:var(--success); }
-        .modo-btn.sender { border-color:#7c3aed; color:#7c3aed; }
+        #modalElegirModo .modal-content { max-width:380px; text-align:left; }
+        /* ===== Selector de módulo ===== */
+        .modo-modal { max-width:380px; padding:22px 18px 16px; border-radius:18px; box-shadow:0 24px 48px -12px rgba(15,23,42,0.35); }
+        .modo-head { text-align:center; margin-bottom:18px; }
+        .modo-head h3 { font-size:17px; font-weight:800; letter-spacing:.04em; color:var(--text-main); margin:0 0 4px; }
+        .modo-head p { font-size:12px; font-weight:500; color:var(--text-muted); margin:0; }
+        .modo-btn { --mc:var(--primary); position:relative; display:flex; align-items:center; gap:14px; width:100%; padding:13px 14px; margin-bottom:10px; text-align:left; font-family:inherit; cursor:pointer;
+            border-radius:14px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);
+            box-shadow:0 1px 2px rgba(15,23,42,0.06); transition:border-color .15s, box-shadow .15s, transform .1s, background .15s; overflow:hidden; }
+        .modo-btn::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--mc); }
+        .modo-btn:hover { border-color:var(--mc); box-shadow:0 4px 14px color-mix(in srgb, var(--mc) 18%, transparent); }
+        .modo-btn:active { transform:scale(.985); background:color-mix(in srgb, var(--mc) 6%, var(--card-bg)); }
+        .modo-btn:focus-visible { outline:2px solid var(--mc); outline-offset:2px; }
+        .modo-btn .mb-ico { flex-shrink:0; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--mc); background:color-mix(in srgb, var(--mc) 12%, transparent); }
+        .modo-btn .mb-ico .ico { width:22px; height:22px; }
+        .modo-btn .mb-txt { display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
+        .modo-btn .mb-name { font-size:14px; font-weight:800; letter-spacing:.02em; color:var(--text-main); }
+        .modo-btn .mb-desc { font-size:11.5px; font-weight:500; color:var(--text-muted); line-height:1.3; }
+        .modo-btn .mb-chev { flex-shrink:0; width:16px; height:16px; color:var(--text-muted); }
+        .modo-btn.picking { --mc:var(--primary); }
+        .modo-btn.repro { --mc:var(--success); }
+        .modo-btn.sender { --mc:#7c3aed; }
         .btn-toggle-modo { background: var(--header-surface); border:none; color: var(--header-text); padding:5px 8px; border-radius:6px; font-size:10px; font-weight:800; cursor:pointer; }
 
         /* ===== REPROGRAMACIONES: rediseño (header claro, panel de resultado, switch, recientes, menú) ===== */
@@ -570,6 +587,11 @@
         .sender-prog .sp-l { font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
         .sender-prog .sp-aviso { margin-top:8px; font-size:11px; font-weight:600; color:var(--text-muted); }
         .sender-prog .sp-aviso.err { color:#ef4444; }
+        .sender-etq-count { display:none; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); }
+        .sender-etq-count.visible { display:flex; }
+        .sender-etq-count .sec-l { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+        .sender-etq-count .sec-l .ico { width:18px; height:18px; color:var(--primary); }
+        .sender-etq-count .sec-n { font-size:22px; font-weight:900; color:var(--primary); font-variant-numeric:tabular-nums; line-height:1; }
         .sender-otro { display:none; margin-bottom:12px; }
         .sender-otro.visible { display:flex; }
         .sub-ubic-head { display:flex; justify-content:space-between; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); padding:0 14px 6px; }
@@ -778,6 +800,10 @@
                     <span class="slider"></span>
                 </span>
             </label>
+            <div class="sender-etq-count" id="senderEtqCount" role="status" aria-live="polite">
+                <span class="sec-l"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg>Etiquetas emitidas (sesión)</span>
+                <span class="sec-n" id="senderEtqN">0</span>
+            </div>
             <label class="repro-switch-row">
                 <span class="rs-text"><span class="rs-name">Permitir forzado</span><span class="rs-desc">Registra aunque no coincida con la base, la ruta o la zona</span></span>
                 <span class="side-switch">
@@ -1091,11 +1117,26 @@
 
 <!-- MODAL ELEGIR MODO OPERATIVO -->
 <div id="modalElegirModo" class="modal modal-blur" style="z-index: 6800;">
-    <div class="modal-content">
-        <h3 style="font-weight:900; color:var(--primary); margin-bottom:14px;">SELECCIONAR MÓDULO</h3>
-        <button class="modo-btn picking" onclick="elegirModoOperativo('picking')">📦 RUTEO DINÁMICO IL</button>
-        <button class="modo-btn repro" onclick="elegirModoOperativo('repro')">🔄 REPROGRAMACIONES</button>
-        <button class="modo-btn sender" onclick="senderTipoConfirmado=false; elegirModoOperativo('sender')">📤 SENDER</button>
+    <div class="modal-content modo-modal" role="dialog" aria-labelledby="modoTitulo">
+        <div class="modo-head">
+            <h3 id="modoTitulo">Seleccionar módulo</h3>
+            <p>Elige con qué operación deseas trabajar</p>
+        </div>
+        <button type="button" class="modo-btn picking" onclick="elegirModoOperativo('picking')">
+            <span class="mb-ico"><svg class="ico" aria-hidden="true"><use href="#i-truck"/></svg></span>
+            <span class="mb-txt"><span class="mb-name">Ruteo Dinámico IL</span><span class="mb-desc">Escaneo, validación de ruta y etiquetas</span></span>
+            <svg class="ico mb-chev" aria-hidden="true"><use href="#i-chev"/></svg>
+        </button>
+        <button type="button" class="modo-btn repro" onclick="elegirModoOperativo('repro')">
+            <span class="mb-ico"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span>
+            <span class="mb-txt"><span class="mb-name">Reprogramaciones</span><span class="mb-desc">Control de folios reprogramados por turno</span></span>
+            <svg class="ico mb-chev" aria-hidden="true"><use href="#i-chev"/></svg>
+        </button>
+        <button type="button" class="modo-btn sender" onclick="senderTipoConfirmado=false; elegirModoOperativo('sender')">
+            <span class="mb-ico"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
+            <span class="mb-txt"><span class="mb-name">Sender</span><span class="mb-desc">Escaneo con o sin base de datos</span></span>
+            <svg class="ico mb-chev" aria-hidden="true"><use href="#i-chev"/></svg>
+        </button>
     </div>
 </div>
 
@@ -1648,6 +1689,19 @@
         <div style="display: flex; gap: 8px; justify-content: center;">
             <button onclick="ejecutarReimpresion()" style="flex:1; background: var(--print-color); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800;">✓ REIMPRIMIR</button>
             <button onclick="cerrarModalReimprimir()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800;">CANCELAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SENDER: la etiqueta de este folio ya se emitió hoy -> ¿reimprimir? -->
+<div id="modalSenderReimprimir" class="modal modal-blur" style="z-index: 6900;">
+    <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid var(--print-color);">
+        <div style="font-size: 30px; margin-bottom: 10px;">🖨️</div>
+        <h4 style="color:var(--print-color); font-weight:900; margin-bottom: 5px;">¿REIMPRIMIR ETIQUETA?</h4>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">La guía <b id="txtSenderReimprimirGuia" style="color:var(--text-main);"></b> ya fue escaneada y etiquetada hoy a las <b id="txtSenderReimprimirHora" style="color:var(--text-main);"></b>.</p>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+            <button onclick="senderEjecutarReimpresion()" style="flex:1; background: var(--print-color); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800;">✓ REIMPRIMIR</button>
+            <button onclick="senderCerrarReimprimir()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800;">CANCELAR</button>
         </div>
     </div>
 </div>
@@ -3195,7 +3249,7 @@
             const badgeTotalBaseRutaMenu = document.getElementById('badgeTotalBaseRutaMenu');
             if (badgeTotalBaseRutaMenu) badgeTotalBaseRutaMenu.textContent = baseDatosRutaNube.length;
             actualizarIndicadorBaseRuta();
-            try { senderCargarRutasBase(); actualizarSenderUI(); } catch (e) {}
+            try { senderCargarRutasBase(); senderRefrescarOpcionEtiqueta(); actualizarSenderUI(); } catch (e) {}
             // El resumen por ubicación es independiente del modo: se
             // refresca siempre que cambia la Base de Ruta en la nube.
             actualizarUIRutaLocal();
@@ -6112,6 +6166,27 @@
         mostrar('senderOtroRow', !etq); // al mostrarse vuelve a regirse por su clase (solo si eligen "OTROS")
     }
 
+    // La opción "Imprimir etiqueta" (y su contador) solo existe con base de datos de ruta cargada.
+    let senderEtiquetasSesion = 0;
+    function senderRefrescarOpcionEtiqueta() {
+        const hayBase = senderTipo === 'CON_BASE' && baseDatosRutaNube.length > 0;
+        const impRow = document.getElementById('senderImprimirRow');
+        if (impRow) impRow.style.display = hayBase ? '' : 'none';
+        const chk = document.getElementById('chkImprimirEtiquetaSender');
+        if (!hayBase && chk) chk.checked = false;
+        const cnt = document.getElementById('senderEtqCount');
+        if (cnt) cnt.classList.toggle('visible', hayBase);
+        const n = document.getElementById('senderEtqN');
+        if (n) n.textContent = senderEtiquetasSesion;
+        senderRefrescarCamposEtiqueta();
+    }
+
+    function senderSumarEtiquetas(cant) {
+        senderEtiquetasSesion += cant;
+        const n = document.getElementById('senderEtqN');
+        if (n) n.textContent = senderEtiquetasSesion;
+    }
+
     function senderRefrescarTipoUI() {
         const con = senderTipo === 'CON_BASE';
         const txt = con ? 'Con base de datos' : 'Sin base de datos';
@@ -6129,10 +6204,7 @@
         if (rutaRow) rutaRow.style.display = con ? '' : 'none';
         if (!con) document.getElementById('senderRuta').value = '';
         // La etiqueta de Sender se arma con los datos de la base de ruta: solo existe con base de datos.
-        const impRow = document.getElementById('senderImprimirRow');
-        if (impRow) impRow.style.display = con ? '' : 'none';
-        if (!con) { const chkImp = document.getElementById('chkImprimirEtiquetaSender'); if (chkImp) chkImp.checked = false; }
-        senderRefrescarCamposEtiqueta();
+        senderRefrescarOpcionEtiqueta();
         const u = (document.getElementById('displayUser') || {}).textContent || '';
         const ini = (u.replace('@', '').trim()[0] || '?').toUpperCase();
         document.getElementById('avatarSender').textContent = ini;
@@ -6277,6 +6349,11 @@
         const dup = scans.find(e => (e.guia === val || e.guiaOriginal === val) && !(e.cat && e.cat.startsWith('IMPRESO')) &&
             e.hora && obtenerJornadaLogica(parsearHoraAObj(e.hora)) === jornada);
         if (dup) {
+            // Con "Imprimir etiqueta" activo y etiqueta ya emitida: se pregunta si reimprimir (sin modal de duplicado).
+            if (senderEtiquetaActiva() && dup.etiquetado) {
+                senderAbrirReimprimir(dup);
+                return;
+            }
             abrirModalDup(dup, { dia: dup.dia, ruta: dup.ruta, sec: dup.sec });
             playBeep(200);
             return;
@@ -6349,6 +6426,7 @@
             senderModo: 'CON_BASE',
             tienda: v.ruta
         };
+        if (coin && senderEtiquetaActiva()) reg.etiquetado = true; // etiqueta emitida con este escaneo
 
         rtdb.ref('escaneos_sender').push(reg).then(() => {
             emitirSonidoCoincidenciaRuta();
@@ -6418,7 +6496,35 @@
         if (!chk || !chk.checked) return;
         if (!coin) { senderEstado('⚠️ ' + val + ' — sin datos en la base, no se imprime etiqueta', 'warn'); return; }
         const zpl = generarZPLEtiquetaSender(coin.dia, coin.secuencia, coin.ruta, senderFechaEtiqueta(), val);
-        enviarZPLaImpresora(zpl);
+        Promise.resolve(enviarZPLaImpresora(zpl)).then(ok => { if (ok) senderSumarEtiquetas(1); });
+    }
+
+    // ---------- REIMPRESIÓN de etiqueta Sender ----------
+    let senderRegAReimprimir = null;
+
+    function senderAbrirReimprimir(reg) {
+        senderRegAReimprimir = reg;
+        document.getElementById('txtSenderReimprimirGuia').textContent = reg.guiaOriginal || reg.guia;
+        const hora = String(reg.hora || '').split(' - ')[1] || reg.hora || 'N/D';
+        document.getElementById('txtSenderReimprimirHora').textContent = hora;
+        document.getElementById('modalSenderReimprimir').style.display = 'flex';
+        playBeep(200);
+    }
+
+    function senderCerrarReimprimir() {
+        document.getElementById('modalSenderReimprimir').style.display = 'none';
+        senderRegAReimprimir = null;
+        const i = document.getElementById('inpScanSender'); if (i) i.focus();
+    }
+
+    function senderEjecutarReimpresion() {
+        const r = senderRegAReimprimir;
+        if (r) {
+            const zpl = generarZPLEtiquetaSender(r.dia, r.sec, r.ruta, senderFechaEtiqueta(), r.guiaOriginal || r.guia);
+            Promise.resolve(enviarZPLaImpresora(zpl)).then(ok => { if (ok) senderSumarEtiquetas(1); });
+            showToast();
+        }
+        senderCerrarReimprimir();
     }
 
     // ---------- SIN BASE: escaneo general con todas sus reglas ----------
