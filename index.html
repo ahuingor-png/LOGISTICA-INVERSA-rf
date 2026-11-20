@@ -1362,6 +1362,10 @@
                 <div style="font-size:9px; color:var(--text-muted); font-weight:700;">TOTAL / APROB. / FALTAN</div>
             </div>
         </div>
+        <label id="cdvEnlaceWrap" style="display:none; align-items:center; gap:10px; margin-top:10px; padding:10px 12px; border:1px solid #0284c7; border-radius:10px; background:rgba(2,132,199,0.07); cursor:pointer; font-size:12px; font-weight:800; color:#0284c7;">
+            <input type="checkbox" id="chkCdvEnlazar" onchange="cdvToggleEnlazar()" style="width:18px; height:18px; accent-color:#0284c7;">
+            <span>🔗 ENLAZAR RASTREO<br><small style="font-weight:600; color:var(--text-muted);">Vincula un rastreo nuevo a uno que ya está en la base CD VES</small></span>
+        </label>
         <button class="btn-header" style="display:flex; margin-top:10px; width:100%; background:rgba(16,185,129,0.08); color:#10b981; justify-content:center; border:1px dashed #10b981;" onclick="cerrarZonaControlSeguridad()">🔒 CERRAR ZONA (PL)</button>
         <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin:10px 0 4px;">📋 Folios de la zona</div>
         <div id="listaFoliosZonaCS" style="display:flex; flex-direction:column; gap:6px; max-height: 50vh; overflow-y:auto;">
@@ -1833,6 +1837,36 @@
         <div style="display:flex; gap:8px;">
             <button onclick="cdvCerrarNoPertenece()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">CERRAR</button>
             <button id="cdvNpBtnAgregar" onclick="cdvConfirmarAgregar()" style="flex:1; background: #0ea5e9; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">➕ AGREGAR A ESTE PL</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CD VES: enlazar un rastreo a uno que ya está en la base ===== -->
+<div id="modalCdvEnlBase" class="modal modal-blur" style="z-index: 6150;">
+    <div class="modal-content" style="max-width: 380px; text-align: center; border: 3px solid #0284c7;">
+        <div style="font-size: 30px; margin-bottom: 8px;">🔗</div>
+        <h4 style="color:#0284c7; font-weight:900; margin-bottom: 6px;">PASO 1 · RASTREO DE LA BASE</h4>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Escanea o escribe el rastreo que <b>ya está cargado</b> en la base CD VES.</p>
+        <input type="text" id="inpCdvEnlBase" autocomplete="off" placeholder="RASTREO EN LA BASE" style="width:100%; padding:12px; font-size:15px; font-weight:800; text-align:center; border:2px solid #0284c7; border-radius:8px; background:var(--card-bg); color:var(--text-main); text-transform:uppercase; box-sizing:border-box;" onkeydown="if(event.key==='Enter'){event.preventDefault();cdvEnlValidarBase();}">
+        <div id="cdvEnlBaseErr" style="display:none; margin-top:10px; font-size:12px; font-weight:800; color:#ef4444;"></div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+            <button onclick="cdvEnlCancelar()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">CANCELAR</button>
+            <button onclick="cdvEnlValidarBase()" style="flex:1; background: #0284c7; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">CONTINUAR</button>
+        </div>
+    </div>
+</div>
+<div id="modalCdvEnlNuevo" class="modal modal-blur" style="z-index: 6150;">
+    <div class="modal-content" style="max-width: 380px; text-align: center; border: 3px solid #0284c7;">
+        <div style="font-size: 30px; margin-bottom: 8px;">🔗</div>
+        <h4 style="color:#0284c7; font-weight:900; margin-bottom: 6px;">PASO 2 · RASTREO A ENLAZAR</h4>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Se enlazará al rastreo de la base:</p>
+        <div id="cdvEnlBaseTxt" style="font-size:14px; font-weight:900; color:var(--text-main); margin-bottom:4px;"></div>
+        <div id="cdvEnlBaseInfo" style="font-size:11px; font-weight:700; color:#f59e0b; margin-bottom:10px;"></div>
+        <input type="text" id="inpCdvEnlNuevo" autocomplete="off" placeholder="ESCANEAR RASTREO A ENLAZAR" style="width:100%; padding:12px; font-size:15px; font-weight:800; text-align:center; border:2px solid #0284c7; border-radius:8px; background:var(--card-bg); color:var(--text-main); text-transform:uppercase; box-sizing:border-box;" onkeydown="if(event.key==='Enter'){event.preventDefault();cdvEnlGuardar();}">
+        <div id="cdvEnlNuevoErr" style="display:none; margin-top:10px; font-size:12px; font-weight:800; color:#ef4444;"></div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+            <button onclick="cdvEnlCancelar()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">CANCELAR</button>
+            <button id="cdvEnlBtnGuardar" onclick="cdvEnlGuardar()" style="flex:1; background: #0284c7; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">🔗 ENLAZAR</button>
         </div>
     </div>
 </div>
@@ -2774,11 +2808,13 @@
         if (tipo === 'CDVES') {
             cdvPrevUbic = (document.getElementById('inpUbic').value || '');
             cdvPrevZona = (document.getElementById('inpZona').value || '');
-            sincronizarControlesEspejo('ubic', '');
+            sincronizarControlesEspejo('ubic', RUTA_FIJA_CDVES);   // la ruta a validar es siempre 1001
             sincronizarControlesEspejo('zona', '');
             cdvCargarDatos();
             cdvEscucharValidaciones();
             cdvEscucharCargas();
+            cdvEscucharEnlaces();
+            const wEnl = document.getElementById('cdvEnlaceWrap'); if (wEnl) wEnl.style.display = 'flex';
         }
         document.getElementById('chkControlSeguridad').checked = true;
         const d = document.getElementById('chkControlSeguridadDesk');
@@ -2792,6 +2828,7 @@
             if (cdvRefMeta) { try { cdvRefMeta.off('value'); } catch (e) {} cdvRefMeta = null; }
             if (cdvRefReglas) { try { cdvRefReglas.off('value'); } catch (e) {} cdvRefReglas = null; }
             clearTimeout(cdvRecargaTimer);
+            cdvEnlApagar();
             cdvEtiquetasPanel(false);
             sincronizarControlesEspejo('ubic', cdvPrevUbic);
             sincronizarControlesEspejo('zona', cdvPrevZona);
@@ -2927,7 +2964,7 @@
         return (z && cdvPLs[z]) ? z : null;
     }
     function cdvPonerPL(pl) {
-        sincronizarControlesEspejo('ubic', pl);
+        sincronizarControlesEspejo('ubic', RUTA_FIJA_CDVES);   // Ubicación = ruta 1001; el PL va en Zona
         sincronizarControlesEspejo('zona', pl);
         cdvActualizarPanel();
     }
@@ -3039,6 +3076,12 @@
     function cdvProcesarEscaneo(val) {
         if (cdvEstadoCarga !== 'listo') { cdvAvisoSinCarga(); cdvFoco(); return; }
 
+        // Si escanean un rastreo ENLAZADO, se valida como su rastreo de la base
+        let viaEnlace = '';
+        if (!cdvIndice[val]) {
+            const kEnl = Object.keys(cdvEnlaces).filter(k => cdvEnlaces[k] && cdvNorm(cdvEnlaces[k].enlazado) === val)[0];
+            if (kEnl && cdvIndice[cdvNorm(cdvEnlaces[kEnl].rastreo)]) { viaEnlace = val; val = cdvNorm(cdvEnlaces[kEnl].rastreo); }
+        }
         const rec = cdvIndice[val];
         let pl = cdvPLActivo();
 
@@ -3077,7 +3120,7 @@
                 ts: Date.now(),
                 flujo: rec.flujo || '',
                 migrado: false
-            });
+            }, viaEnlace ? { enlazadoEscaneado: viaEnlace } : {});
         }).then(res => {
             if (!res.committed) {
                 mostrarModalRutaAlert('warning', '🔒 FOLIO YA VALIDADO', `El folio <b>${val}</b> ya había sido validado por otro usuario.`, 3000);
@@ -3096,7 +3139,7 @@
                 cdvAbrirMigracion(pl, true);
             } else {
                 const t = document.getElementById('toast');
-                t.textContent = resultado.completo ? `✅ COMPLETO (${resultado.bultosValidados} DE ${rec.bul})` : `📦 BULTO ${resultado.bultosValidados} DE ${rec.bul}`;
+                t.textContent = viaEnlace ? `🔗 ${viaEnlace} → ${val} · ${resultado.bultosValidados} DE ${rec.bul}` : resultado.completo ? `✅ COMPLETO (${resultado.bultosValidados} DE ${rec.bul})` : `📦 BULTO ${resultado.bultosValidados} DE ${rec.bul}`;
                 t.style.background = resultado.completo ? '#3f8862' : '#0ea5e9';
                 t.style.display = 'block';
                 setTimeout(() => { t.style.display = 'none'; t.textContent = 'ÉXITO ✓'; }, 1400);
@@ -3187,6 +3230,111 @@
         });
     }
 
+    // ---------- Enlazar un rastreo a otro que ya está en la base CD VES ----------
+    // Se guarda en Firebase "cd_ves_enlaces/<rastreo base>" y REVERSA lo muestra
+    // en una columna junto al rastreo, en la misma fila.
+    const CDV_ENLACES = 'cd_ves_enlaces';
+    let cdvEnlaces = {};            // clave(base) -> { rastreo, enlazado, ... }
+    let cdvRefEnl = null;
+    let cdvEnlCtx = null;           // { base, rec }
+
+    function cdvEscucharEnlaces() {
+        if (cdvRefEnl) return;
+        cdvRefEnl = rtdb.ref(CDV_ENLACES);
+        cdvRefEnl.on('value', snap => { cdvEnlaces = snap.val() || {}; }, err => console.error('CD VES: enlaces', err));
+    }
+    function cdvEnlOcultarModales() {
+        ['modalCdvEnlBase', 'modalCdvEnlNuevo'].forEach(id => { const m = document.getElementById(id); if (m) m.style.display = 'none'; });
+    }
+    function cdvEnlApagar() {
+        if (cdvRefEnl) { try { cdvRefEnl.off('value'); } catch (e) {} cdvRefEnl = null; }
+        cdvEnlOcultarModales();
+        cdvEnlCtx = null;
+        const c = document.getElementById('chkCdvEnlazar'); if (c) c.checked = false;
+        const w = document.getElementById('cdvEnlaceWrap'); if (w) w.style.display = 'none';
+    }
+    function cdvToggleEnlazar() {
+        const chk = document.getElementById('chkCdvEnlazar');
+        if (!chk.checked) { cdvEnlOcultarModales(); cdvEnlCtx = null; cdvFoco(); return; }
+        if (cdvEstadoCarga !== 'listo') { chk.checked = false; cdvAvisoSinCarga(); return; }
+        cdvEnlAbrirBase();
+    }
+    function cdvEnlAbrirBase() {
+        cdvEnlCtx = null;
+        const inp = document.getElementById('inpCdvEnlBase');
+        inp.value = '';
+        document.getElementById('cdvEnlBaseErr').style.display = 'none';
+        document.getElementById('modalCdvEnlNuevo').style.display = 'none';
+        document.getElementById('modalCdvEnlBase').style.display = 'flex';
+        setTimeout(() => inp.focus(), 50);
+    }
+    function cdvEnlError(id, msg) {
+        const e = document.getElementById(id);
+        e.innerHTML = msg; e.style.display = 'block';
+        playBeep(300);
+    }
+    function cdvEnlCancelar() {
+        cdvEnlOcultarModales();
+        cdvEnlCtx = null;
+        const c = document.getElementById('chkCdvEnlazar'); if (c) c.checked = false;
+        cdvFoco();
+    }
+    function cdvEnlValidarBase() {
+        const inp = document.getElementById('inpCdvEnlBase');
+        const val = cdvNorm(inp.value);
+        if (!val) return;
+        const rec = cdvIndice[val];
+        if (!rec) {
+            cdvEnlError('cdvEnlBaseErr', '❌ El rastreo <b>' + cdvEsc(val) + '</b> NO existe en la base CD VES.');
+            inp.value = ''; inp.focus();
+            return;
+        }
+        cdvEnlCtx = { base: val, rec: rec };
+        const prev = cdvEnlaces[cdvClave(val)];
+        document.getElementById('cdvEnlBaseTxt').textContent = val;
+        document.getElementById('cdvEnlBaseInfo').innerHTML = prev && prev.enlazado ? '⚠️ Ya tiene enlazado <b>' + cdvEsc(prev.enlazado) + '</b>; si continúas se reemplazará.' : '';
+        const n = document.getElementById('inpCdvEnlNuevo');
+        n.value = '';
+        document.getElementById('cdvEnlNuevoErr').style.display = 'none';
+        document.getElementById('modalCdvEnlBase').style.display = 'none';
+        document.getElementById('modalCdvEnlNuevo').style.display = 'flex';
+        setTimeout(() => n.focus(), 50);
+    }
+    function cdvEnlGuardar() {
+        if (!cdvEnlCtx) return;
+        const inp = document.getElementById('inpCdvEnlNuevo');
+        const nuevo = cdvNorm(inp.value);
+        if (!nuevo) return;
+        const { base, rec } = cdvEnlCtx;
+        const falla = msg => { cdvEnlError('cdvEnlNuevoErr', msg); inp.value = ''; inp.focus(); };
+        if (nuevo === base) return falla('❌ Es el mismo rastreo de la base. Escanea el rastreo que quieres enlazar.');
+        if (cdvIndice[nuevo]) return falla('❌ <b>' + cdvEsc(nuevo) + '</b> ya existe en la base CD VES; no se puede enlazar como adicional.');
+        const claveBase = cdvClave(base);
+        const otro = Object.keys(cdvEnlaces).filter(k => k !== claveBase && cdvEnlaces[k] && cdvNorm(cdvEnlaces[k].enlazado) === nuevo)[0];
+        if (otro) return falla('❌ <b>' + cdvEsc(nuevo) + '</b> ya está enlazado al rastreo <b>' + cdvEsc(cdvEnlaces[otro].rastreo || otro) + '</b>.');
+
+        const btn = document.getElementById('cdvEnlBtnGuardar');
+        btn.disabled = true; btn.style.opacity = '0.5';
+        const reg = { rastreo: base, enlazado: nuevo, pl: rec.pl || '', creadoPor: usuarioActivo, hora: obtenerFechaYHoraActual(), ts: Date.now() };
+        rtdb.ref(CDV_ENLACES + '/' + claveBase).set(reg).then(() => {
+            btn.disabled = false; btn.style.opacity = '1';
+            cdvEnlaces[claveBase] = reg;
+            emitirSonidoCoincidenciaRuta();
+            const t = document.getElementById('toast');
+            if (t) {
+                t.textContent = '🔗 ' + nuevo + ' enlazado a ' + base;
+                t.style.background = '#0284c7'; t.style.display = 'block';
+                setTimeout(() => { t.style.display = 'none'; t.textContent = 'ÉXITO ✓'; }, 1800);
+            }
+            // El check sigue activo: se vuelve a pedir el siguiente rastreo de la base
+            if (document.getElementById('chkCdvEnlazar').checked) cdvEnlAbrirBase();
+        }).catch(err => {
+            console.error('CD VES: enlazar', err);
+            btn.disabled = false; btn.style.opacity = '1';
+            falla('❌ No se pudo guardar en la nube. Intenta de nuevo.');
+        });
+    }
+
     // ---------- Cierre del PL y migración al escáner ----------
     function cdvCerrarPL() {
         if (cdvEstadoCarga !== 'listo') { cdvAvisoSinCarga(); return; }
@@ -3249,7 +3397,7 @@
             let key = v.migradoKey || null;
             if (!yaEnEscaner) {
                 key = rtdb.ref('escaneos_compartidos').push().key;
-                actual['escaneos_compartidos/' + key] = {
+                const regEsc = {
                     guia: i.rastreo,
                     dia: dia,
                     ruta: RUTA_FIJA_CDVES,
@@ -3277,7 +3425,17 @@
                     migradoPor: usuarioActivo,
                     horaMigracion: ahora
                 };
+                actual['escaneos_compartidos/' + key] = regEsc;
                 n++;
+                // Rastreo enlazado: se migra también como registro propio, ligado a su rastreo base
+                const enl = cdvEnlaces[clave];
+                const enlNorm = enl && enl.enlazado ? cdvNorm(enl.enlazado) : '';
+                if (enlNorm && !scansGeneral.some(s => s.guia === enlNorm && s.modo === 'CD_VES' && s.zona === pl && !s.liberado)) {
+                    const keyE = rtdb.ref('escaneos_compartidos').push().key;
+                    actual['escaneos_compartidos/' + keyE] = Object.assign({}, regEsc, { guia: enlNorm, rastreoBase: i.rastreo, enlazadoA: i.rastreo, bul: 1, bultosValidados: 1 });
+                    actual[CDV_VALID + '/' + clave + '/migradoKeyEnlazado'] = keyE;
+                    n++;
+                }
             }
             actual[CDV_VALID + '/' + clave + '/migrado'] = true;
             actual[CDV_VALID + '/' + clave + '/migradoPor'] = usuarioActivo;
