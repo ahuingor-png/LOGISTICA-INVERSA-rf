@@ -1776,15 +1776,50 @@
     </div>
 </div>
 
-<!-- ===== CONTROL DE SEGURIDAD: ELEGIR TIPO DE VALIDACIÓN (DEVOLUCIONES / CD VES) ===== -->
-<div id="modalTipoValidacionCS" class="modal modal-blur" style="z-index: 6200;">
-    <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid #3f8862;">
-        <div style="font-size: 30px; margin-bottom: 6px;">🛡️</div>
-        <h4 style="color:#3f8862; font-weight:900; margin-bottom: 6px;">¿QUÉ VAS A VALIDAR?</h4>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Elige el tipo de validación para esta sesión de Control de Seguridad.</p>
-        <button onclick="elegirTipoValidacionCS('DEV')" style="width:100%; background:#3f8862; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:800; font-size:13px; margin-bottom:8px; cursor:pointer;">📦 DEVOLUCIONES</button>
-        <button onclick="elegirTipoValidacionCS('CDVES')" style="width:100%; background:#0ea5e9; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:800; font-size:13px; margin-bottom:8px; cursor:pointer;">🚚 CD VES</button>
-        <button onclick="cancelarTipoValidacionCS()" style="width:100%; background:var(--bg); color:var(--text-main); border:1px solid var(--border); padding:10px; border-radius:8px; font-weight:800; cursor:pointer;">CANCELAR</button>
+<!-- ===== CONTROL DE SEGURIDAD: ELEGIR TIPO DE VALIDACIÓN (SELLER / CD VES) ===== -->
+<style>
+    #modalTipoValidacionCS .tv-card { width: 100%; max-width: 380px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 24px 48px -12px rgba(15,23,42,.35); overflow: hidden; font-family: inherit; }
+    #modalTipoValidacionCS .tv-head { display: flex; align-items: center; gap: 12px; padding: 18px 18px 14px; border-bottom: 1px solid var(--border); }
+    #modalTipoValidacionCS .tv-shield { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: rgba(61,90,128,.12); color: var(--primary); flex: none; }
+    #modalTipoValidacionCS .tv-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+    #modalTipoValidacionCS .tv-title { margin: 1px 0 0; font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+    #modalTipoValidacionCS .tv-body { padding: 14px 18px 6px; }
+    #modalTipoValidacionCS .tv-sub { margin: 0 0 12px; font-size: 12.5px; line-height: 1.45; color: var(--text-muted); }
+    #modalTipoValidacionCS .tv-opt { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--card-bg); color: var(--text-main); cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s, transform .05s; }
+    #modalTipoValidacionCS .tv-opt:hover { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 6%, var(--card-bg)); }
+    #modalTipoValidacionCS .tv-opt:active { transform: scale(.99); }
+    #modalTipoValidacionCS .tv-ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--acc) 14%, transparent); color: var(--acc); }
+    #modalTipoValidacionCS .tv-txt { flex: 1; min-width: 0; }
+    #modalTipoValidacionCS .tv-txt b { display: block; font-size: 14px; font-weight: 800; letter-spacing: .01em; }
+    #modalTipoValidacionCS .tv-txt small { display: block; margin-top: 1px; font-size: 11.5px; color: var(--text-muted); }
+    #modalTipoValidacionCS .tv-go { color: var(--text-muted); flex: none; }
+    #modalTipoValidacionCS .tv-foot { padding: 4px 18px 16px; }
+    #modalTipoValidacionCS .tv-cancel { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--text-muted); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    #modalTipoValidacionCS .tv-cancel:hover { color: var(--text-main); background: var(--bg); }
+</style>
+<div id="modalTipoValidacionCS" class="modal modal-blur" style="z-index: 6200;" onclick="if(event.target===this) cancelarTipoValidacionCS()">
+    <div class="tv-card" role="dialog" aria-modal="true" aria-labelledby="tvTitulo">
+        <div class="tv-head">
+            <div class="tv-shield"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <div>
+                <div class="tv-eyebrow">Control de Seguridad</div>
+                <h4 class="tv-title" id="tvTitulo">¿Qué vas a validar?</h4>
+            </div>
+        </div>
+        <div class="tv-body">
+            <p class="tv-sub">Selecciona el tipo de validación para esta sesión.</p>
+            <button type="button" class="tv-opt" style="--acc:#3f8862;" onclick="elegirTipoValidacionCS('DEV')">
+                <span class="tv-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/></svg></span>
+                <span class="tv-txt"><b>Seller</b><small>Validación por folio y ruta</small></span>
+                <svg class="tv-go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <button type="button" class="tv-opt" style="--acc:#0284c7;" onclick="elegirTipoValidacionCS('CDVES')">
+                <span class="tv-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>
+                <span class="tv-txt"><b>CD VES</b><small>Rastreos del anclaje CD VES</small></span>
+                <svg class="tv-go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+        <div class="tv-foot"><button type="button" class="tv-cancel" onclick="cancelarTipoValidacionCS()">Cancelar</button></div>
     </div>
 </div>
 
@@ -2667,7 +2702,7 @@
     }
 
     // ======================================================================
-    // CONTROL DE SEGURIDAD · TIPO DE VALIDACIÓN (DEVOLUCIONES / CD VES)
+    // CONTROL DE SEGURIDAD · TIPO DE VALIDACIÓN (SELLER / CD VES)
     // Al activar 🛡️ VALIDAR se pregunta qué se va a validar.
     //  - DEVOLUCIONES: comportamiento de siempre (regido por Validación de Ruta).
     //  - CD VES: regido por las cargas de CD VES hechas en REVERSA
@@ -6595,11 +6630,21 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const codigoSW = `
-                const CACHE_NAME = 'reversa-cache-v1';
+                const CACHE_NAME = 'reversa-cache-v2';
                 self.addEventListener('install', (e) => { self.skipWaiting(); });
-                self.addEventListener('activate', (e) => { self.clients.claim(); });
+                self.addEventListener('activate', (e) => {
+                    e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+                });
                 self.addEventListener('fetch', (e) => {
                     if (e.request.method !== 'GET') return;
+                    // La página (HTML) va primero a la red: así cada versión nueva se ve al abrir; sin red usa la copia guardada
+                    if (e.request.mode === 'navigate' || (e.request.headers.get('accept') || '').indexOf('text/html') >= 0) {
+                        e.respondWith(fetch(e.request).then((resp) => {
+                            if (resp && resp.status === 200) { const copia = resp.clone(); caches.open(CACHE_NAME).then((c) => c.put(e.request, copia)); }
+                            return resp;
+                        }).catch(() => caches.match(e.request)));
+                        return;
+                    }
                     e.respondWith(
                         caches.open(CACHE_NAME).then((cache) =>
                             cache.match(e.request).then((cached) => {
