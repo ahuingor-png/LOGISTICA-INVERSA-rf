@@ -1776,6 +1776,50 @@
     </div>
 </div>
 
+<!-- ===== CONTROL DE SEGURIDAD: ELEGIR TIPO DE VALIDACIÓN (DEVOLUCIONES / CD VES) ===== -->
+<div id="modalTipoValidacionCS" class="modal modal-blur" style="z-index: 6200;">
+    <div class="modal-content" style="max-width: 360px; text-align: center; border: 3px solid #3f8862;">
+        <div style="font-size: 30px; margin-bottom: 6px;">🛡️</div>
+        <h4 style="color:#3f8862; font-weight:900; margin-bottom: 6px;">¿QUÉ VAS A VALIDAR?</h4>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">Elige el tipo de validación para esta sesión de Control de Seguridad.</p>
+        <button onclick="elegirTipoValidacionCS('DEV')" style="width:100%; background:#3f8862; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:800; font-size:13px; margin-bottom:8px; cursor:pointer;">📦 DEVOLUCIONES</button>
+        <button onclick="elegirTipoValidacionCS('CDVES')" style="width:100%; background:#0ea5e9; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:800; font-size:13px; margin-bottom:8px; cursor:pointer;">🚚 CD VES</button>
+        <button onclick="cancelarTipoValidacionCS()" style="width:100%; background:var(--bg); color:var(--text-main); border:1px solid var(--border); padding:10px; border-radius:8px; font-weight:800; cursor:pointer;">CANCELAR</button>
+    </div>
+</div>
+
+<!-- ===== CD VES: el folio no pertenece al PL activo / agregar solo si está en la carga ===== -->
+<div id="modalCdvNoPertenece" class="modal modal-blur" style="z-index: 6100;">
+    <div class="modal-content" style="max-width: 380px; text-align: center; border: 3px solid #b2453f;">
+        <div style="font-size: 30px; margin-bottom: 8px;">⛔</div>
+        <h4 id="cdvNpTitulo" style="color:#b2453f; font-weight:900; margin-bottom: 6px;">NO PERTENECE A ESTE PL</h4>
+        <p id="cdvNpMensaje" style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;"></p>
+        <div id="cdvNpInfo" style="font-size:11px; font-weight:700; margin-bottom:14px;"></div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="cdvCerrarNoPertenece()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">CERRAR</button>
+            <button id="cdvNpBtnAgregar" onclick="cdvConfirmarAgregar()" style="flex:1; background: #0ea5e9; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">➕ AGREGAR A ESTE PL</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CD VES: migración al escáner ===== -->
+<div id="modalCdvMigrar" class="modal modal-blur" style="z-index: 6100;">
+    <div class="modal-content" style="max-width: 400px; text-align: center; border: 3px solid #3f8862;">
+        <div style="font-size: 30px; margin-bottom: 8px;">📤</div>
+        <h4 id="cdvMigTitulo" style="color:#3f8862; font-weight:900; margin-bottom: 6px;">¿MIGRAR AL ESCÁNER?</h4>
+        <p id="cdvMigMensaje" style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;"></p>
+        <div style="text-align:left; margin-bottom:10px;">
+            <label style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Categoría del registro</label>
+            <select id="cdvMigCat" style="width:100%; margin-top:4px; padding:8px; font-size:13px; font-weight:700; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); color:var(--text-main);"></select>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-bottom:14px; text-align:left;">Campos que se generan: folio, día, ruta, secuencia, bultos, ubicación (PL), zona (PL), categoría, hora, usuario y datos de la validación (quién y cuándo).</div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="cdvCerrarMigracion()" style="flex:1; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">AHORA NO</button>
+            <button id="cdvMigBtn" onclick="cdvEjecutarMigracion()" style="flex:1; background: #3f8862; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 800; cursor:pointer;">✅ MIGRAR</button>
+        </div>
+    </div>
+</div>
+
 <div id="modalAlertaRuta" class="modal modal-blur" style="z-index: 6000;">
     <div id="alertaRutaContent" class="modal-content" style="max-width: 360px; text-align: center;">
         <h4 id="alertaRutaTitulo" style="font-weight:900; margin-bottom: 10px; text-transform: uppercase;"></h4>
@@ -2622,8 +2666,611 @@
         return cat === "RUTEO IL (MULTIFOLIOS)" || cat === "CD VES IL (MULTIFOLIOS)";
     }
 
+    // ======================================================================
+    // CONTROL DE SEGURIDAD · TIPO DE VALIDACIÓN (DEVOLUCIONES / CD VES)
+    // Al activar 🛡️ VALIDAR se pregunta qué se va a validar.
+    //  - DEVOLUCIONES: comportamiento de siempre (regido por Validación de Ruta).
+    //  - CD VES: regido por las cargas de CD VES hechas en REVERSA
+    //    (Firebase "cd_ves_cargas"). El PL sale de la carga (Rol Container).
+    // ======================================================================
+    const CDV_RTDB = 'cd_ves_cargas';
+    const CDV_VALID = 'cd_ves_validaciones';
+    const CDV_REGLAS = 'cd_ves_flujos_reglas';
+    // Mismas reglas iniciales que siembra REVERSA (se usan solo si en la nube aún no hay reglas)
+    const CDV_REGLAS_BASE = [
+        { flujo: 'Internacional', prefijo: 'MLP', largo: 12, tipo: 'cualquiera' },
+        { flujo: 'SFS', prefijo: '2010', largo: 16, tipo: 'digitos' },
+        { flujo: 'CD-VES', prefijo: '7', largo: 18, tipo: 'digitos' },
+        { flujo: 'DOFFA', prefijo: '240', largo: 18, tipo: 'digitos' }
+    ];
+    let cdvModo = null;                 // null | 'DEV' | 'CDVES'
+    let cdvEleccionHecha = false;
+    let cdvIndice = {};                 // rastreo -> { rastreo, pl, bul, flujo, ruta, destino }
+    let cdvPLs = {};                    // PL -> [rastreo, ...]
+    let cdvValidaciones = {};           // clave -> registro de validación (nube)
+    let cdvEstadoCarga = '';            // '' | 'cargando' | 'listo' | 'vacio' | 'error'
+    let cdvPromesaCarga = null;
+    let cdvRefValid = null;
+    let cdvReglasData = { reglas: [] };
+    let cdvPrevUbic = '', cdvPrevZona = '';
+    let cdvCtxNoPert = null;
+    let cdvCtxMigrar = null;
+
+    const cdvEsc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const cdvColKey = k => String(k || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cdvNorm = v => {
+        if (typeof v === 'number') v = v.toLocaleString('fullwide', { useGrouping: false });
+        return String(v == null ? '' : v).trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    };
+    const cdvClave = s => String(s).replace(/[.#$\[\]\/]/g, '_');
+    const cdvDes = str => JSON.parse(str, (k, v) => (v && typeof v === 'object' && v.__d !== undefined) ? new Date(v.__d) : v);
+
+    function cdvFoco() {
+        const inp = document.getElementById('inpScan');
+        const inpDesk = document.getElementById('inpScanDesk');
+        if (inp) inp.value = '';
+        if (inpDesk) inpDesk.value = '';
+        if (document.body.classList.contains('mode-desktop-active') && inpDesk) inpDesk.focus(); else if (inp) inp.focus();
+    }
+
+    // ---------- Pregunta al activar ----------
     function toggleControlSeguridad() {
+        const chk = document.getElementById('chkControlSeguridad');
+        if (chk.checked && !cdvEleccionHecha) {
+            // Se deja apagado hasta que el usuario elija el tipo de validación
+            chk.checked = false;
+            const d = document.getElementById('chkControlSeguridadDesk');
+            if (d) d.checked = false;
+            document.getElementById('modalTipoValidacionCS').style.display = 'flex';
+            return;
+        }
+        toggleControlSeguridadBase();
+        cdvEleccionHecha = false;
+    }
+
+    function cancelarTipoValidacionCS() {
+        document.getElementById('modalTipoValidacionCS').style.display = 'none';
+    }
+
+    function elegirTipoValidacionCS(tipo) {
+        document.getElementById('modalTipoValidacionCS').style.display = 'none';
+        cdvEleccionHecha = true;
+        cdvModo = tipo;
+        if (tipo === 'CDVES') {
+            cdvPrevUbic = (document.getElementById('inpUbic').value || '');
+            cdvPrevZona = (document.getElementById('inpZona').value || '');
+            sincronizarControlesEspejo('ubic', '');
+            sincronizarControlesEspejo('zona', '');
+            cdvCargarDatos();
+            cdvEscucharValidaciones();
+            cdvEscucharCargas();
+        }
+        document.getElementById('chkControlSeguridad').checked = true;
+        const d = document.getElementById('chkControlSeguridadDesk');
+        if (d) d.checked = true;
+        toggleControlSeguridad();
+    }
+
+    function cdvAlDesactivar() {
+        if (cdvModo === 'CDVES') {
+            if (cdvRefValid) { try { cdvRefValid.off('value'); } catch (e) {} cdvRefValid = null; }
+            if (cdvRefMeta) { try { cdvRefMeta.off('value'); } catch (e) {} cdvRefMeta = null; }
+            if (cdvRefReglas) { try { cdvRefReglas.off('value'); } catch (e) {} cdvRefReglas = null; }
+            clearTimeout(cdvRecargaTimer);
+            cdvEtiquetasPanel(false);
+            sincronizarControlesEspejo('ubic', cdvPrevUbic);
+            sincronizarControlesEspejo('zona', cdvPrevZona);
+            ['inpScan', 'inpScanDesk'].forEach(id => { const e = document.getElementById(id); if (e) e.disabled = false; });
+        }
+        cdvModo = null;
+    }
+
+    // ---------- Datos de CD VES (las cargas que se hacen en REVERSA) ----------
+    function cdvClasificar(s) {
+        const rs = (cdvReglasData.reglas || []).slice().sort((a, b) => {
+            const sc = r => r.prefijo.length * 100 + (r.largo ? 10 : 0) + (r.tipo !== 'cualquiera' ? 1 : 0);
+            return sc(b) - sc(a);
+        });
+        for (const r of rs) {
+            if (r.prefijo && s.indexOf(r.prefijo) !== 0) continue;
+            if (r.largo && s.length !== r.largo) continue;
+            if (r.tipo === 'digitos' && !/^\d+$/.test(s)) continue;
+            if (r.tipo === 'letras' && !/[A-Z]/.test(s)) continue;
+            return r.flujo;
+        }
+        return null;
+    }
+
+    function cdvCargarDatos(silencioso) {
+        if (cdvPromesaCarga) return cdvPromesaCarga;
+        if (!silencioso) cdvEstadoCarga = 'cargando';
+        cdvPromesaCarga = Promise.all([
+            rtdb.ref(CDV_REGLAS).once('value').then(s => {
+                const d = s.val() || {};
+                const arr = Array.isArray(d.reglas) ? d.reglas : Object.keys(d.reglas || {}).map(k => d.reglas[k]);
+                cdvReglasData = { reglas: arr.map(r => ({
+                    flujo: String(r.flujo || '').trim(),
+                    prefijo: String(r.prefijo || '').trim().toUpperCase(),
+                    largo: parseInt(r.largo, 10) || 0,
+                    tipo: ['digitos', 'letras'].indexOf(r.tipo) >= 0 ? r.tipo : 'cualquiera'
+                })).filter(r => r.flujo) };
+            }).catch(() => {}),
+            rtdb.ref(CDV_RTDB + '/meta').once('value').then(snap => {
+                const v = snap.val() || {};
+                const ids = Object.keys(v).filter(k => v[k] && typeof v[k] === 'object')
+                    .sort((a, b) => (v[a].fecha || 0) - (v[b].fecha || 0));
+                return Promise.all(ids.map(id => rtdb.ref(CDV_RTDB + '/data/' + id).once('value').then(s => {
+                    const d = s.val() || {};
+                    let rows = [];
+                    Object.keys(d).sort((a, b) => a - b).forEach(k => { if (typeof d[k] === 'string') rows = rows.concat(cdvDes(d[k])); });
+                    return { meta: v[id], rows };
+                })));
+            })
+        ]).then(res => {
+            if (!(cdvReglasData.reglas || []).length) cdvReglasData = { reglas: CDV_REGLAS_BASE.slice() };
+            cdvConstruirIndice(res[1] || []);
+            cdvEstadoCarga = Object.keys(cdvIndice).length ? 'listo' : 'vacio';
+        }).catch(err => {
+            console.error('CD VES: no se pudieron bajar las cargas', err);
+            if (!silencioso) cdvEstadoCarga = 'error';   // en un refresco silencioso se conserva lo que ya había
+        }).then(() => {
+            cdvPromesaCarga = null;
+            if (modoControlSeguridadActivo && cdvModo === 'CDVES') cdvActualizarPanel();
+        });
+        return cdvPromesaCarga;
+    }
+
+    function cdvConstruirIndice(cargas) {
+        const idx = {};
+        cargas.forEach(c => {   // de la más vieja a la más reciente: la reciente manda
+            (c.rows || []).forEach(r => {
+                const col = n => Object.keys(r).filter(k => cdvColKey(k) === n)[0];
+                const get = (...names) => { for (const n of names) { const k = col(n); if (k !== undefined && r[k] !== '' && r[k] != null) return r[k]; } return ''; };
+                const ras = cdvNorm(get('rastreo'));
+                if (!ras) return;
+                const pl = String(get('pl', 'ubicacion', 'codigorolcontainer', 'rolcontainer')).trim().toUpperCase();
+                const rol = String(get('codigorolcontainer', 'rolcontainer')).trim().toUpperCase();
+                const bul = parseInt(get('bultos'), 10);
+                const flujoOrig = String(get('flujo')).trim();
+                idx[ras] = {
+                    rastreo: ras,
+                    pl: pl || 'SIN PL',
+                    rol: rol,
+                    bul: isNaN(bul) || bul < 1 ? 1 : bul,
+                    flujo: cdvClasificar(ras) || 'Sin clasificar',   // igual que REVERSA
+                    ruta: String(get('ruta')).trim(),
+                    destino: String(get('destino')).trim()
+                };
+            });
+        });
+        cdvIndice = idx;
+        cdvPLs = {};
+        Object.keys(idx).forEach(k => { (cdvPLs[idx[k].pl] = cdvPLs[idx[k].pl] || []).push(k); });
+    }
+
+    // Si en REVERSA suben/eliminan una carga o cambian las reglas de flujo, se refresca solo
+    let cdvRefMeta = null, cdvRefReglas = null, cdvRecargaTimer = null;
+    function cdvProgramarRecarga() {
+        clearTimeout(cdvRecargaTimer);
+        cdvRecargaTimer = setTimeout(function recargar() {
+            if (!(modoControlSeguridadActivo && cdvModo === 'CDVES')) return;
+            if (cdvPromesaCarga) { cdvPromesaCarga.then(recargar); return; }   // hay una descarga en curso: se repite al terminar
+            cdvCargarDatos(true).then(() => {
+                if (!(modoControlSeguridadActivo && cdvModo === 'CDVES')) return;
+                cdvActualizarPanel();
+                const t = document.getElementById('toast');
+                if (t) {
+                    t.textContent = '🔄 Cargas CD VES actualizadas';
+                    t.style.background = '#0ea5e9';
+                    t.style.display = 'block';
+                    setTimeout(() => { t.style.display = 'none'; t.textContent = 'ÉXITO ✓'; }, 1600);
+                }
+            });
+        }, 800);
+    }
+    function cdvEscucharCargas() {
+        if (cdvRefMeta) return;
+        let primeraMeta = true, primeraReglas = true;   // el primer valor es el estado actual, no un cambio
+        cdvRefMeta = rtdb.ref(CDV_RTDB + '/meta');
+        cdvRefMeta.on('value', () => { if (primeraMeta) { primeraMeta = false; return; } cdvProgramarRecarga(); }, err => console.error('CD VES: cargas (escucha)', err));
+        cdvRefReglas = rtdb.ref(CDV_REGLAS);
+        cdvRefReglas.on('value', () => { if (primeraReglas) { primeraReglas = false; return; } cdvProgramarRecarga(); }, err => console.error('CD VES: reglas (escucha)', err));
+    }
+
+    function cdvEscucharValidaciones() {
+        if (cdvRefValid) return;
+        cdvRefValid = rtdb.ref(CDV_VALID);
+        cdvRefValid.on('value', snap => {
+            cdvValidaciones = snap.val() || {};
+            if (modoControlSeguridadActivo && cdvModo === 'CDVES') cdvActualizarPanel();
+        }, err => console.error('CD VES: validaciones', err));
+    }
+
+    // ---------- PL activo ----------
+    function cdvPLActivo() {
+        const z = String(document.getElementById('inpZona').value || '').toUpperCase().trim();
+        return (z && cdvPLs[z]) ? z : null;
+    }
+    function cdvPonerPL(pl) {
+        sincronizarControlesEspejo('ubic', pl);
+        sincronizarControlesEspejo('zona', pl);
+        cdvActualizarPanel();
+    }
+
+    // Estado de un PL: lista de folios (de la carga + los agregados a mano) con su avance
+    function cdvEstadoPL(pl) {
+        const items = [];
+        (cdvPLs[pl] || []).forEach(ras => {
+            const rec = cdvIndice[ras];
+            const v = cdvValidaciones[cdvClave(ras)];
+            const vVale = v && v.pl === pl ? v : null;
+            // Agregado a mano en otro PL: ya no cuenta como pendiente aquí
+            const movido = !!(v && v.pl !== pl && v.agregadoManual && v.completo);
+            items.push({ rastreo: ras, rec, v: vVale, vOtro: movido ? v : null, movido, movidoA: movido ? v.pl : '', total: rec.bul, esc: vVale ? (parseInt(vVale.bultosValidados) || 0) : 0, completo: !!(vVale && vVale.completo) });
+        });
+        Object.keys(cdvValidaciones).forEach(k => {
+            const v = cdvValidaciones[k];
+            if (!v || v.pl !== pl || !v.agregadoManual) return;
+            const rec = cdvIndice[v.rastreo];
+            if (!rec || rec.pl === pl) return;
+            items.push({ rastreo: v.rastreo, rec, v, total: rec.bul, esc: parseInt(v.bultosValidados) || 0, completo: !!v.completo, extra: true });
+        });
+        return {
+            items,
+            completos: items.filter(i => i.completo),
+            pendientes: items.filter(i => !i.completo && !i.movido),
+            porMigrar: items.filter(i => i.completo && !(i.v && i.v.migrado))
+        };
+    }
+
+    // ---------- Panel ----------
+    function cdvEtiquetasPanel(on) {
+        ['panelControlSeguridad', 'panelControlSeguridadDesk'].forEach(id => {
+            const p = document.getElementById(id); if (!p) return;
+            const labs = p.querySelectorAll('.stat-label-mini');
+            const btn = p.querySelector('button.btn-header');
+            const titulos = p.querySelectorAll('div[style*="text-transform:uppercase"]');
+            if (on) {
+                if (labs[0]) { if (labs[0].dataset.orig === undefined) labs[0].dataset.orig = labs[0].textContent; labs[0].textContent = '🚚 CARGA CD VES'; }
+                if (btn) { if (btn.dataset.orig === undefined) btn.dataset.orig = btn.textContent; btn.textContent = '📤 CERRAR PL Y MIGRAR AL ESCÁNER'; }
+                if (titulos[0]) { if (titulos[0].dataset.orig === undefined) titulos[0].dataset.orig = titulos[0].textContent; titulos[0].textContent = '📋 Folios del PL'; }
+            } else {
+                if (labs[0] && labs[0].dataset.orig !== undefined) labs[0].textContent = labs[0].dataset.orig;
+                if (labs[1] && labs[1].dataset.orig !== undefined) labs[1].textContent = labs[1].dataset.orig;
+                if (btn && btn.dataset.orig !== undefined) btn.textContent = btn.dataset.orig;
+                if (titulos[0] && titulos[0].dataset.orig !== undefined) titulos[0].textContent = titulos[0].dataset.orig;
+            }
+        });
+    }
+
+    function cdvActualizarPanel() {
+        cdvEtiquetasPanel(true);
+        const pl = cdvPLActivo();
+        const zonaTxt = String(document.getElementById('inpZona').value || '').toUpperCase().trim();
+        ['panelControlSeguridad', 'panelControlSeguridadDesk'].forEach(id => {
+            const p = document.getElementById(id); if (!p) return;
+            const labs = p.querySelectorAll('.stat-label-mini');
+            if (labs[1]) { if (labs[1].dataset.orig === undefined) labs[1].dataset.orig = labs[1].textContent; labs[1].textContent = '📍 PL ' + (pl || '—'); }
+        });
+
+        // Totales de toda la carga
+        const todos = Object.keys(cdvIndice);
+        const aprobTodos = todos.filter(r => { const v = cdvValidaciones[cdvClave(r)]; return v && v.completo; }).length;
+        const est = pl ? cdvEstadoPL(pl) : { items: [], completos: [], pendientes: [] };
+        const set = (suf, a, b, c, d, e, f) => {
+            const w = (id, val) => { const el = document.getElementById(id + suf); if (el) el.textContent = val; };
+            w('csRutaTotal', a); w('csRutaAprobados', b); w('csRutaFaltan', c);
+            w('csZonaTotal', d); w('csZonaAprobados', e); w('csZonaFaltan', f);
+        };
+        ['', 'Desk'].forEach(suf => set(suf, todos.length, aprobTodos, todos.length - aprobTodos, est.items.filter(i => !i.movido).length, est.completos.length, est.pendientes.length));
+
+        let html;
+        if (cdvEstadoCarga === 'cargando' || cdvEstadoCarga === '') {
+            html = '<div class="resumen-vacio">⏳ Descargando las cargas de CD VES...</div>';
+        } else if (cdvEstadoCarga === 'error') {
+            html = '<div class="resumen-vacio" style="color:var(--danger);">No se pudieron bajar las cargas de CD VES. Revisa la conexión y vuelve a activar el modo.</div>';
+        } else if (cdvEstadoCarga === 'vacio') {
+            html = '<div class="resumen-vacio" style="color:var(--danger);">No hay cargas de CD VES. Súbelas primero desde REVERSA (módulo CD VES).</div>';
+        } else if (!pl) {
+            html = '<div class="resumen-vacio">' + (zonaTxt ? 'El PL <b>' + cdvEsc(zonaTxt) + '</b> no existe en la carga CD VES.<br>' : '') + 'Escanea un folio de la carga para definir el PL automáticamente.</div>';
+        } else {
+            html = est.items.map(i => {
+                if (i.movido) {
+                    return '<div class="folio-cs-card" style="opacity:.65;" data-guia="' + cdvEsc(i.rastreo) + '"><span>↪️ ' + cdvEsc(i.rastreo) + '<br><small style="font-weight:600; opacity:.8;">Movido al PL ' + cdvEsc(i.movidoA) + ' · 👤 ' + cdvEsc((i.vOtro && i.vOtro.validadoPor) || 'N/D') + ' · 🕒 ' + cdvEsc((i.vOtro && i.vOtro.horaValidacion) || 'N/D') + '</small></span><span class="folio-cs-tag">MOVIDO</span></div>';
+                }
+                const info = i.completo && i.v ? '<br><small style="font-weight:600; opacity:.8;">👤 ' + cdvEsc(i.v.validadoPor || 'N/D') + ' · 🕒 ' + cdvEsc(i.v.horaValidacion || 'N/D') + (i.v.migrado ? ' · 📤 migrado' : '') + (i.extra ? ' · ➕ agregado' : '') + '</small>' : '';
+                return '<div class="folio-cs-card ' + (i.completo ? 'aprobado' : 'pendiente') + '" data-guia="' + cdvEsc(i.rastreo) + '"><span>' + (i.completo ? '✅' : '⏳') + ' ' + cdvEsc(i.rastreo) + info + '</span><span class="folio-cs-tag">' + i.esc + ' DE ' + i.total + '</span></div>';
+            }).join('') || '<div class="resumen-vacio">Este PL no tiene folios en la carga.</div>';
+        }
+        const l1 = document.getElementById('listaFoliosZonaCS');
+        const l2 = document.getElementById('listaFoliosZonaCSDesk');
+        if (l1) l1.innerHTML = html;
+        if (l2) l2.innerHTML = html;
+        ['inpScan', 'inpScanDesk'].forEach(id => { const e = document.getElementById(id); if (e) e.disabled = false; });
+    }
+
+    // ---------- Escaneo en modo CD VES ----------
+    function cdvAvisoSinCarga() {
+        if (cdvEstadoCarga === 'cargando') {
+            mostrarModalRutaAlert('warning', '⏳ CARGANDO CD VES', 'Todavía se están descargando las cargas. Intenta de nuevo en unos segundos.', 2500);
+        } else if (cdvEstadoCarga === 'vacio') {
+            mostrarModalRutaAlert('error', '❌ SIN CARGA CD VES', 'No hay cargas de CD VES en la nube. Súbelas primero desde REVERSA.', 0);
+        } else {
+            mostrarModalRutaAlert('error', '❌ NO SE PUDO LEER CD VES', 'No se pudieron bajar las cargas de CD VES. Revisa la conexión y vuelve a activar el modo.', 0);
+            cdvCargarDatos();
+        }
+    }
+
+    function cdvProcesarEscaneo(val) {
+        if (cdvEstadoCarga !== 'listo') { cdvAvisoSinCarga(); cdvFoco(); return; }
+
+        const rec = cdvIndice[val];
+        let pl = cdvPLActivo();
+
+        if (!rec) {   // no está en ninguna carga: no se puede ni agregar
+            cdvAbrirNoPertenece(val, null, pl);
+            return;
+        }
+        if (!pl) {    // el primer folio válido define el PL
+            pl = rec.pl;
+            cdvPonerPL(pl);
+        }
+        if (rec.pl !== pl) {   // está en la carga pero en otro PL
+            cdvAbrirNoPertenece(val, rec, pl);
+            return;
+        }
+
+        const clave = cdvClave(val);
+        const previo = cdvValidaciones[clave];
+        if (previo && previo.completo) {
+            mostrarModalRutaAlert('warning', '🔒 FOLIO YA VALIDADO', `El folio <b>${val}</b> ya fue validado en el PL <b>${cdvEsc(previo.pl)}</b>.<br><br>👤 Usuario: <b>${cdvEsc(previo.validadoPor || 'N/D')}</b><br>🕒 Hora: <b>${cdvEsc(previo.horaValidacion || 'N/D')}</b><br><br>No se permite volver a escanearlo.`, 0);
+            cdvFoco();
+            return;
+        }
+
+        const ahora = obtenerFechaYHoraActual();
+        let resultado = null;
+        rtdb.ref(CDV_VALID + '/' + clave).transaction(cur => {
+            if (cur && cur.completo) return;   // alguien más lo completó: se aborta
+            const esc = ((cur && parseInt(cur.bultosValidados)) || 0) + 1;
+            return Object.assign({}, cur || {}, {
+                rastreo: val, pl: pl, bul: rec.bul,
+                bultosValidados: Math.min(esc, rec.bul),
+                completo: esc >= rec.bul,
+                validadoPor: usuarioActivo,
+                horaValidacion: ahora,
+                ts: Date.now(),
+                flujo: rec.flujo || '',
+                migrado: false
+            });
+        }).then(res => {
+            if (!res.committed) {
+                mostrarModalRutaAlert('warning', '🔒 FOLIO YA VALIDADO', `El folio <b>${val}</b> ya había sido validado por otro usuario.`, 3000);
+                cdvFoco();
+                return;
+            }
+            resultado = res.snapshot.val();
+            cdvValidaciones[clave] = resultado;
+            emitirSonidoCoincidenciaRuta();
+            document.getElementById('dispLast').textContent = val;
+            if (document.getElementById('dispLastDesk')) document.getElementById('dispLastDesk').textContent = val;
+            cdvActualizarPanel();
+
+            const est = cdvEstadoPL(pl);
+            if (est.pendientes.length === 0 && est.porMigrar.length > 0) {
+                cdvAbrirMigracion(pl, true);
+            } else {
+                const t = document.getElementById('toast');
+                t.textContent = resultado.completo ? `✅ COMPLETO (${resultado.bultosValidados} DE ${rec.bul})` : `📦 BULTO ${resultado.bultosValidados} DE ${rec.bul}`;
+                t.style.background = resultado.completo ? '#3f8862' : '#0ea5e9';
+                t.style.display = 'block';
+                setTimeout(() => { t.style.display = 'none'; t.textContent = 'ÉXITO ✓'; }, 1400);
+            }
+            cdvFoco();
+        }).catch(err => {
+            console.error('CD VES: registrar validación', err);
+            mostrarModalRutaAlert('error', '❌ NO SE PUDO REGISTRAR', 'No se pudo guardar la validación en la nube. Intenta de nuevo.', 3000);
+            cdvFoco();
+        });
+    }
+
+    // ---------- Modal: no pertenece al PL (y agregar solo si está en la carga) ----------
+    function cdvAbrirNoPertenece(val, rec, pl) {
+        cdvCtxNoPert = { guia: val, rec: rec, pl: pl };
+        const msg = document.getElementById('cdvNpMensaje');
+        const info = document.getElementById('cdvNpInfo');
+        const btn = document.getElementById('cdvNpBtnAgregar');
+        const tit = document.getElementById('cdvNpTitulo');
+        const habilitar = ok => { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; btn.style.cursor = ok ? 'pointer' : 'not-allowed'; };
+
+        if (rec) {
+            const v = cdvValidaciones[cdvClave(val)];
+            tit.textContent = 'NO PERTENECE A ESTE PL';
+            msg.innerHTML = `El folio <b style="color:var(--text-main);">${cdvEsc(val)}</b> no pertenece al PL <b style="color:var(--text-main);">${cdvEsc(pl || '—')}</b>.`;
+            if (v && v.completo) {
+                info.style.color = '#f59e0b';
+                info.innerHTML = `Está en el PL <b>${cdvEsc(rec.pl)}</b> y ya fue validado ahí por <b>${cdvEsc(v.validadoPor || 'N/D')}</b> (${cdvEsc(v.horaValidacion || 'N/D')}). No se puede agregar.`;
+                habilitar(false);
+            } else {
+                info.style.color = '#f59e0b';
+                const prevBul = (v && v.pl === rec.pl) ? (parseInt(v.bultosValidados) || 0) : 0;
+                const avisoBul = (prevBul > 0 && prevBul < rec.bul) ? `<br>📦 Lleva <b>${prevBul} de ${rec.bul}</b> bultos validados en su PL; al agregarlo aquí se marcará completo (<b>${rec.bul}</b>).` : '';
+                info.innerHTML = `⚠️ Según la carga CD VES, está en el PL <b>${cdvEsc(rec.pl)}</b>.<br>Si confirmas que está aquí, puedes agregarlo (quedará marcado como forzado y saldrá como pendiente del PL original).` + avisoBul;
+                habilitar(!!pl);
+            }
+        } else {
+            tit.textContent = 'NO ESTÁ EN LA CARGA CD VES';
+            msg.innerHTML = `El folio <b style="color:var(--text-main);">${cdvEsc(val)}</b> no pertenece al PL${pl ? ' <b style="color:var(--text-main);">' + cdvEsc(pl) + '</b>' : ''} ni a ninguna carga de CD VES.`;
+            info.style.color = '#ef4444';
+            info.innerHTML = '❌ Este folio NO está en la carga realizada. No se puede agregar.';
+            habilitar(false);
+        }
+        document.getElementById('modalCdvNoPertenece').style.display = 'flex';
+        playBeep(300);
+    }
+
+    function cdvCerrarNoPertenece() {
+        document.getElementById('modalCdvNoPertenece').style.display = 'none';
+        cdvCtxNoPert = null;
+        cdvFoco();
+    }
+
+    function cdvConfirmarAgregar() {
+        if (!cdvCtxNoPert) return;
+        const { guia, rec, pl } = cdvCtxNoPert;
+        if (!rec || !pl) { cdvCerrarNoPertenece(); return; }   // fuera de la carga: nunca se agrega
+        const ahora = obtenerFechaYHoraActual();
+        const clave = cdvClave(guia);
+        const reg = {
+            rastreo: guia, pl: pl, plOriginal: rec.pl, bul: rec.bul, bultosValidados: rec.bul,
+            completo: true, validadoPor: usuarioActivo, horaValidacion: ahora, ts: Date.now(),
+            flujo: rec.flujo || '', forzado: true, agregadoManual: true, migrado: false
+        };
+        rtdb.ref(CDV_VALID + '/' + clave).transaction(cur => {
+            if (cur && cur.completo) return;
+            return Object.assign({}, reg, { bultosPrevios: (cur && parseInt(cur.bultosValidados)) || 0 });
+        }).then(res => {
+            document.getElementById('modalCdvNoPertenece').style.display = 'none';
+            cdvCtxNoPert = null;
+            if (!res.committed) {
+                mostrarModalRutaAlert('warning', '🔒 FOLIO YA VALIDADO', `El folio <b>${guia}</b> ya fue validado por otro usuario.`, 3000);
+                return;
+            }
+            cdvValidaciones[clave] = res.snapshot.val() || reg;
+            emitirSonidoCoincidenciaRuta();
+            cdvActualizarPanel();
+            const est = cdvEstadoPL(pl);
+            if (est.pendientes.length === 0 && est.porMigrar.length > 0) {
+                cdvAbrirMigracion(pl, true);
+            } else {
+                mostrarModalRutaAlert('success', '✅ AGREGADO Y VALIDADO', `El folio <b>${guia}</b> fue agregado al PL <b>${cdvEsc(pl)}</b>.`, 2500);
+            }
+            cdvFoco();
+        }).catch(err => {
+            console.error('CD VES: agregar', err);
+            mostrarModalRutaAlert('error', '❌ NO SE PUDO AGREGAR', 'No se pudo guardar en la nube. Intenta de nuevo.', 3000);
+        });
+    }
+
+    // ---------- Cierre del PL y migración al escáner ----------
+    function cdvCerrarPL() {
+        if (cdvEstadoCarga !== 'listo') { cdvAvisoSinCarga(); return; }
+        const pl = cdvPLActivo();
+        if (!pl) {
+            mostrarModalRutaAlert('warning', '⚠️ SIN PL', 'Escanea un folio de la carga CD VES para definir el PL antes de cerrarlo.', 3000);
+            return;
+        }
+        const est = cdvEstadoPL(pl);
+        if (est.pendientes.length > 0 && !document.getElementById('chkModoForzar').checked) {
+            const listaHtml = est.pendientes.map(i => `<div>📦 ${cdvEsc(i.rastreo)}: ${i.esc} de ${i.total}</div>`).join('');
+            mostrarModalRutaAlert('warning', '⚠️ PL INCOMPLETO', `Faltan bultos por validar en <b>${est.pendientes.length}</b> folio(s) del PL <b>${cdvEsc(pl)}</b>:<div class="alert-details">${listaHtml}</div>Activa <b>🔓 FORZAR</b> y vuelve a intentar para migrar solo lo ya validado.`, 0);
+            return;
+        }
+        if (est.porMigrar.length === 0) {
+            mostrarModalRutaAlert('warning', 'ℹ️ NADA POR MIGRAR', `No hay folios validados pendientes de migrar en el PL <b>${cdvEsc(pl)}</b>.`, 3000);
+            return;
+        }
+        cdvAbrirMigracion(pl, false);
+    }
+
+    function cdvAbrirMigracion(pl, todoValido) {
+        const est = cdvEstadoPL(pl);
+        cdvCtxMigrar = { pl: pl };
+        document.getElementById('cdvMigTitulo').textContent = todoValido ? '✅ PL VALIDADO COMPLETO' : '📤 MIGRAR AL ESCÁNER';
+        document.getElementById('cdvMigMensaje').innerHTML =
+            (todoValido ? `Todos los folios del PL <b style="color:var(--text-main);">${cdvEsc(pl)}</b> fueron validados.<br>` : `PL <b style="color:var(--text-main);">${cdvEsc(pl)}</b>: ${est.pendientes.length} folio(s) sin validar no se migrarán.<br>`) +
+            `<b>¿Deseas realizar la migración al escáner?</b><br>Se generarán <b style="color:var(--text-main);">${est.porMigrar.length}</b> registro(s).`;
+        const sel = document.getElementById('cdvMigCat');
+        const opts = ['APROBADO'].concat((typeof opcionesEstandar !== 'undefined' ? opcionesEstandar : []).filter(o => o !== '-'));
+        sel.innerHTML = opts.map(o => `<option value="${cdvEsc(o)}">${cdvEsc(o)}</option>`).join('');
+        const btn = document.getElementById('cdvMigBtn');
+        btn.disabled = false; btn.style.opacity = '1';
+        document.getElementById('modalCdvMigrar').style.display = 'flex';
+        playBeep(600);
+    }
+
+    function cdvCerrarMigracion() {
+        document.getElementById('modalCdvMigrar').style.display = 'none';
+        cdvCtxMigrar = null;
+        cdvFoco();
+    }
+
+    function cdvEjecutarMigracion() {
+        if (!cdvCtxMigrar) return;
+        const pl = cdvCtxMigrar.pl;
+        const est = cdvEstadoPL(pl);
+        if (!est.porMigrar.length) { cdvCerrarMigracion(); return; }
+        const btn = document.getElementById('cdvMigBtn');
+        btn.disabled = true; btn.style.opacity = '0.5';
+        const cat = document.getElementById('cdvMigCat').value || 'APROBADO';
+        const ahora = obtenerFechaYHoraActual();
+        const dia = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'][new Date().getDay()];
+
+        const lotes = [];
+        let actual = {}, n = 0;
+        est.porMigrar.forEach(i => {
+            const v = i.v, rec = i.rec, clave = cdvClave(i.rastreo);
+            const yaEnEscaner = scansGeneral.some(s => s.guia === i.rastreo && s.modo === 'CD_VES' && s.zona === pl && !s.liberado);
+            let key = v.migradoKey || null;
+            if (!yaEnEscaner) {
+                key = rtdb.ref('escaneos_compartidos').push().key;
+                actual['escaneos_compartidos/' + key] = {
+                    guia: i.rastreo,
+                    dia: dia,
+                    ruta: RUTA_FIJA_CDVES,
+                    sec: 'S/S',
+                    bul: rec.bul,
+                    ubic: pl,
+                    zona: pl,
+                    zonaEsperada: rec.pl,
+                    cat: cat,
+                    bultosValidados: parseInt(v.bultosValidados) || rec.bul,
+                    hora: v.horaValidacion || ahora,
+                    forzado: !!v.forzado,
+                    usuario: v.validadoPor || usuarioActivo,
+                    validadoPor: v.validadoPor || usuarioActivo,
+                    horaValidacion: v.horaValidacion || ahora,
+                    modo: 'CD_VES',
+                    cdVes: true,
+                    esCDVES: true,
+                    roll: rec.rol || rec.pl,
+                    flujo: rec.flujo || '',
+                    rolContainer: rec.rol || '',
+                    rutaOrigen: rec.ruta || '',
+                    destino: rec.destino || '',
+                    agregadoManualCS: !!v.agregadoManual,
+                    migradoPor: usuarioActivo,
+                    horaMigracion: ahora
+                };
+                n++;
+            }
+            actual[CDV_VALID + '/' + clave + '/migrado'] = true;
+            actual[CDV_VALID + '/' + clave + '/migradoPor'] = usuarioActivo;
+            actual[CDV_VALID + '/' + clave + '/horaMigracion'] = ahora;
+            if (key) actual[CDV_VALID + '/' + clave + '/migradoKey'] = key;
+            if (Object.keys(actual).length >= 300) { lotes.push(actual); actual = {}; }
+        });
+        if (Object.keys(actual).length) lotes.push(actual);
+
+        lotes.reduce((p, lote) => p.then(() => rtdb.ref().update(lote)), Promise.resolve()).then(() => {
+            Object.keys(cdvValidaciones).forEach(k => {
+                const v = cdvValidaciones[k];
+                if (v && v.pl === pl && v.completo) { v.migrado = true; }
+            });
+            cdvCerrarMigracion();
+            emitirSonidoCoincidenciaRuta();
+            mostrarModalRutaAlert('success', '📤 MIGRACIÓN REALIZADA', `Se migraron <b>${est.porMigrar.length}</b> folio(s) del PL <b>${cdvEsc(pl)}</b> al escáner como <b>${cdvEsc(cat)}</b>.`, 3500);
+            cdvActualizarPanel();
+        }).catch(err => {
+            console.error('CD VES: migración', err);
+            btn.disabled = false; btn.style.opacity = '1';
+            mostrarModalRutaAlert('error', '❌ NO SE PUDO MIGRAR', 'Falló la migración al escáner. No se perdió nada: puedes intentarlo de nuevo.', 0);
+        });
+    }
+
+    function toggleControlSeguridadBase() {
         modoControlSeguridadActivo = document.getElementById('chkControlSeguridad').checked;
+        if (!modoControlSeguridadActivo) cdvAlDesactivar();
 
         if (modoControlSeguridadActivo && !procesandoExclusividad) {
             procesandoExclusividad = true;
@@ -2695,6 +3342,7 @@
     }
 
     function actualizarPanelControlSeguridad() {
+        if (cdvModo === 'CDVES') { cdvActualizarPanel(); return; }
         const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim();
         const zonaActiva = document.getElementById('inpZona').value.toUpperCase().trim() || 'SIN ZONA';
         const listaCont = document.getElementById('listaFoliosZonaCS');
@@ -2777,6 +3425,7 @@
     }
 
     function procesarEscaneoControlSeguridad(val) {
+        if (cdvModo === 'CDVES') { cdvProcesarEscaneo(val); return; }
         const inp = document.getElementById('inpScan');
         const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim();
         const zonaActiva = document.getElementById('inpZona').value.toUpperCase().trim() || 'SIN ZONA';
@@ -2978,6 +3627,7 @@
     }
 
     function cerrarZonaControlSeguridad() {
+        if (cdvModo === 'CDVES') { cdvCerrarPL(); return; }
         const rutaActiva = document.getElementById('inpUbic').value.toUpperCase().trim();
         const zonaActiva = document.getElementById('inpZona').value.toUpperCase().trim() || 'SIN ZONA';
 
@@ -4963,7 +5613,7 @@
         const code = limpiarCodigo(codigoOriginal);
         if (!code) return false;
         
-        if (document.getElementById('chkModoForzar').checked || modoValidarRutaActivo || modoImpresionActivo || modoEtiquetaFolioActivo) return true;
+        if (document.getElementById('chkModoForzar').checked || modoValidarRutaActivo || modoImpresionActivo || modoEtiquetaFolioActivo || (modoControlSeguridadActivo && cdvModo === 'CDVES')) return true;
         
         if (code.startsWith("PL")) return true;
 
