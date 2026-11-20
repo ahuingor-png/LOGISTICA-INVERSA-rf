@@ -3334,6 +3334,9 @@
             inp.placeholder = "ESCANEÉ AQUÍ...";
         }
         actualizarVisibilidadZonaChips();
+        // Al activar/desactivar Validar el panel "Últimos PL escaneados" debe ocultarse/mostrarse al instante
+        // (antes solo se refrescaba con el siguiente escaneo, y quedaba visible dentro del módulo de validación)
+        try { actualizarPanelUltimosPL(); } catch (e) {}
         inp.focus();
         sincronizarOpcionesCatSegunModo();
     }
