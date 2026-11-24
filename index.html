@@ -4620,7 +4620,8 @@
                 cat: "IMPRESO COLD",
                 hora: obtenerFechaYHoraActual(),
                 forzado: forzarActivo || !coincidenciaRutaBase,
-                usuario: usuarioActivo
+                usuario: usuarioActivo,
+                modo: "IMPRESION_COLD"
             };
 
             rtdb.ref("escaneos_compartidos").push(registroValido).then(() => {
@@ -4645,7 +4646,8 @@
                 cat: "IMPRESO (SIN PROG)",
                 hora: obtenerFechaYHoraActual(),
                 forzado: false,
-                usuario: usuarioActivo
+                usuario: usuarioActivo,
+                modo: "IMPRESION_COLD"
             };
 
             rtdb.ref("escaneos_compartidos").push(registroSinProg).then(() => {
@@ -5972,7 +5974,8 @@
             cat: d.cat,
             hora: obtenerFechaYHoraActual(),
             forzado: d.forzado,
-            usuario: usuarioActivo
+            usuario: usuarioActivo,
+            modo: "SIMPLE"   // escaneo general: NO pasa por ruteo IL, no debe ubicar en el Cruce de Datos IL
         };
         if (marca) { nuevo.guiaOriginal = guia; nuevo.marca = marca; }
         if (liquidada) nuevo.liquidada = true;
